@@ -16,7 +16,7 @@ pipeline {
     stages {
         stage ('Initialize') {
             steps {
-                bat '''
+                sh '''
                     echo "M2_HOME = %M2_HOME%"
                     echo "JAVA_HOME = %JAVA_HOME%"
                 '''
@@ -24,12 +24,12 @@ pipeline {
         }
         stage('Build') {
             steps {
-                bat 'mvn -B -DskipTests clean package' 
+                sh 'mvn -B -DskipTests clean package' 
             }
         }
         stage('Test') { 
             steps {
-                bat 'mvn test' 
+                sh 'mvn test' 
             }
             post {
                 always {
@@ -46,7 +46,7 @@ pipeline {
                 }
             }
             steps {
-                bat 'mvn -Pfabric8 -Ddocker.skip=false -Ddocker.host=unix:///var/run/docker.sock verify' 
+                sh 'mvn -Pfabric8 -Ddocker.skip=false -Ddocker.host=unix:///var/run/docker.sock verify' 
             }
         }
     }
