@@ -5,14 +5,13 @@
         <groupId>com.looseboxes</groupId>
         <artifactId>parent</artifactId>
         <version>1.0-SNAPSHOT</version>
-        <relativePath>../parent/pom.xml</relativePath>
     </parent>
     
     <artifactId>bcutil</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
-    <description>Core application logic for most apps in the 'com.looseboxes' group</description>
+    <description>Utility classes used by some projects in the 'com.loosesboxes' group </description>
     
     <dependencies>
         <dependency>
