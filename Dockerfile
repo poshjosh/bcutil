@@ -6,8 +6,8 @@ FROM maven:3-alpine
 # ---------------
 # Create and use non-root user
 # ---------------
-RUN addgroup -S looseboxes && adduser -S poshjosh -G looseboxes
-USER looseboxes:poshjosh
+#RUN addgroup -S looseboxes && adduser -S poshjosh -G looseboxes
+#USER looseboxes:poshjosh
 # ---------------
 # Speed up Maven a bit
 # ---------------
