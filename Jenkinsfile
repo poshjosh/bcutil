@@ -5,8 +5,8 @@
  */
 pipeline {
     agent { 
-        docker {
-            image 'maven:3-alpine'
+        dockerfile {
+            filename 'Dockerfile'
             args '-v /root/.m2:/root/.m2' 
         }
     }
@@ -14,14 +14,6 @@ pipeline {
         skipStagesAfterUnstable()
     }
     stages {
-        stage ('Initialize') {
-            steps {
-                sh '''
-                    echo "M2_HOME = %M2_HOME%"
-                    echo "JAVA_HOME = %JAVA_HOME%"
-                '''
-            }
-        }
         stage('Build') {
             steps {
                 sh 'mvn -B -DskipTests clean package' 
@@ -39,14 +31,13 @@ pipeline {
             }
         }
         stage ('Build docker image') {
-            agent {
-                docker {
-                    image 'maven:3-alpine'
-                    args '-v /root/.m2:/root/.m2 -v /var/run/docker.sock:/var/run/docker.sock' 
-                }
-            }
             steps {
-                sh 'mvn -Pfabric8 -Ddocker.skip=false -Ddocker.host=unix:///var/run/docker.sock verify' 
+                sh 'mvn -Pfabric8 verify' 
+            }
+        }
+        stage('Install') {
+            steps {
+                sh 'mvn jar:jar install:install help:evaluate -Dexpression=project.name'
             }
         }
     }
