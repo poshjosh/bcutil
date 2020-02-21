@@ -13,7 +13,23 @@ pipeline {
         skipStagesAfterUnstable()
     }
     stages {
-        stage('Build and Verify') {
+        stage('Build') {
+            steps {
+                sh 'mvn -B -DskipTests clean package' 
+            }
+        }
+        stage('Test') { 
+            steps {
+                sh 'mvn test' 
+            }
+            post {
+                always {
+                    archive '**/target/**/*.jar'
+                    junit '**/target/**/*.xml'
+                }
+            }
+        }
+        stage('Build Docker Image') {
             steps {
                 sh 'mvn -Ddocker.skip=false -Ddocker.certPath=/certs/client -Ddocker.host=unix:///var/run/docker.sock -Pfabric8 docker:build' 
             }
