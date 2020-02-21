@@ -15,7 +15,7 @@ pipeline {
     stages {
         stage('Build and Verify') {
             steps {
-                sh 'mvn -Ddocker.skip=false -Ddocker.host=tcp://docker:2376 -Pfabric8 verify' 
+                sh 'mvn -Ddocker.skip=false -Ddocker.certPath=/certs/client -Ddocker.host=unix:///var/run/docker.sock -Pfabric8 verify' 
             }
         }
         stage('Install') {
