@@ -31,7 +31,7 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                sh 'mvn -Pfabric8 docker:build' 
+                sh 'mvn -Ddocker.certPath=/certs/client -Ddocker.host=unix:///var/run/docker.sock -Pfabric8 docker:build' 
             }
         }
         stage('Install') {
