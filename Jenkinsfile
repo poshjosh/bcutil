@@ -15,12 +15,22 @@ pipeline {
     stages {
         stage('Build and Verify') {
             steps {
-                sh 'mvn -Ddocker.host=tcp://docker:2376 -Ddocker.certPath=/certs/client -Pfabric8 verify' 
+                sh 'mvn -Ddocker.skip=false -Ddocker.host=unix:///var/run/docker.sock -Pfabric8 verify' 
             }
         }
         stage('Install') {
             steps {
                 sh 'mvn jar:jar install:install help:evaluate -Dexpression=project.name'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'echo IN THE FUTURE, THIS WILL PUSH THE BUILT IMAGE TO DOCKER HUB' 
+            }
+        }
+        stage('Smoke Test') {
+            steps {
+                sh 'echo IN THE FUTURE, THIS RUN THE IMAGE AND CARRY OUT SMOKE TEST' 
             }
         }
     }
