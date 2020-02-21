@@ -32,3 +32,4 @@ COPY pom.xml /usr/src/app
 # Copy other source files (keep in image)
 # ---------------
 COPY src /usr/src/app/src
+

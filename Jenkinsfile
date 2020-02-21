@@ -15,7 +15,7 @@ pipeline {
     stages {
         stage('Build and Verify') {
             steps {
-                sh 'mvn -Ddocker.skip=false -Ddocker.certPath=/certs/client -Ddocker.host=unix:///var/run/docker.sock -Pfabric8 verify' 
+                sh 'mvn -Ddocker.skip=false -Ddocker.certPath=/certs/client -Ddocker.host=unix:///var/run/docker.sock -Pfabric8 docker:build' 
             }
         }
         stage('Install') {
@@ -26,11 +26,6 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh 'echo IN THE FUTURE, THIS WILL PUSH THE BUILT IMAGE TO DOCKER HUB' 
-            }
-        }
-        stage('Smoke Test') {
-            steps {
-                sh 'echo IN THE FUTURE, THIS RUN THE IMAGE AND CARRY OUT SMOKE TEST' 
             }
         }
     }
