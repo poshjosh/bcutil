@@ -31,7 +31,7 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                sh 'mvn -Pfabric8 docker:build' 
+                sh 'mvn docker:build' 
             }
         }
         stage('Install') {
