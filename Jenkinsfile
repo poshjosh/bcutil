@@ -1,7 +1,6 @@
 /**
  * github.com/poshjosh/bcutil
  * https://jenkins.io/doc/tutorials/build-a-java-app-with-maven/
- * docker:build is a fabric8 command for building docker image
  */
 pipeline {
     agent { 
@@ -14,25 +13,9 @@ pipeline {
         skipStagesAfterUnstable()
     }
     stages {
-        stage('Build') {
+        stage('Build and Verify') {
             steps {
-                sh 'mvn -B -DskipTests clean package' 
-            }
-        }
-        stage('Test') { 
-            steps {
-                sh 'mvn test' 
-            }
-            post {
-                always {
-                    archive '**/target/**/*.jar'
-                    junit '**/target/**/*.xml'
-                }
-            }
-        }
-        stage ('Build docker image') {
-            steps {
-                sh 'mvn -Pfabric8 verify' 
+                sh 'mvn -Ddocker.host=tcp://docker:2376 -Ddocker.certPath=/certs/client -Pfabric8 verify' 
             }
         }
         stage('Install') {
