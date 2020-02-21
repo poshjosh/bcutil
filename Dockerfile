@@ -25,7 +25,9 @@ WORKDIR /usr/src/app
 # Install maven dependency packages (keep in image)
 # ---------------
 COPY pom.xml /usr/src/app
-RUN mvn -T 1C install && rm -rf target
+# Now handled by Jenkins
+# ---------------
+# RUN mvn -T 1C install && rm -rf target
 # ---------------
 # Copy other source files (keep in image)
 # ---------------
