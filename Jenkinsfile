@@ -15,7 +15,7 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                sh 'mvn -X -B -DskipTests clean package' 
+                sh 'mvn -X -e -B -DskipTests clean package' 
             }
         }
         stage('Test') { 
@@ -31,10 +31,7 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                sh '''
-                    "sudo chmod 666 /var/run/docker.sock"
-                    "mvn -Ddocker.certPath=/certs/client -Ddocker.host=unix:///var/run/docker.sock -Pfabric8 docker:build"
-                '''
+                sh 'mvn -Ddocker.certPath=/certs/client -Ddocker.host=unix:///var/run/docker.sock -Pfabric8 docker:build'
             }
         }
         stage('Install') {
