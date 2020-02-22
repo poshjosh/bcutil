@@ -78,7 +78,7 @@
                         <artifactId>docker-maven-plugin</artifactId>
                         <version>0.31.0</version>
                         <configuration>
-                            <dockerHost>unix://localhost:2376</dockerHost>
+                            <dockerHost>unix:///var/run/docker.sock</dockerHost>
                             <certPath>/certs/client</certPath>
                             <images>
                                 <image>
