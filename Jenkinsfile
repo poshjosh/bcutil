@@ -31,7 +31,7 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                sh 'mvn -Ddocker.certPath=/certs/client -Ddocker.host=unix:///var/run/docker.sock -Pfabric8 docker:build' 
+                sh 'docker build -t com.looseboxes/bcutil -Ddocker.certPath=/certs/client -Ddocker.host=unix:///var/run/docker.sock'
             }
         }
         stage('Install') {
