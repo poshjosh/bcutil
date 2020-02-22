@@ -78,12 +78,8 @@
                         <artifactId>docker-maven-plugin</artifactId>
                         <version>0.31.0</version>
                         <configuration>
-                            <dockerHost>unix:///var/run/docker.sock</dockerHost>
-                            <certPath>/certs/client</certPath>
                             <images>
                                 <image>
-                                    <!--name>${project.groupId}/${project.artifactId}:${project.version}</name-->
-                                    <name>bcutildockerimg</name>
                                     <build>
                                         <dockerFile>${project.basedir}/Dockerfile</dockerFile >
                                     </build>
