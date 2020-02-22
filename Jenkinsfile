@@ -6,7 +6,7 @@ pipeline {
     agent { 
         dockerfile {
             filename 'Dockerfile'
-            args '--name looseboxes-bcutil -v /root/.m2:/root/.m2' 
+            args '--name looseboxes-bcutil -v /root/.m2:/root/.m2 ' 
         }
     }
     options {
