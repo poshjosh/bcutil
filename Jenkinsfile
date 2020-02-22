@@ -6,7 +6,7 @@ pipeline {
     agent { 
         dockerfile {
             filename 'Dockerfile'
-            args '--name looseboxes-bcutil -v /root/.m2:/root/.m2 -v /var/run/docker.sock:/var/run/docker.sock' 
+            args '--name -u 0 looseboxes-bcutil -v /root/.m2:/root/.m2 -v /var/run/docker.sock:/var/run/docker.sock' 
         }
     }
     options {
@@ -31,7 +31,10 @@ pipeline {
         }
         stage('Build Docker Image') {
             steps {
-                sh 'mvn -Ddocker.certPath=/certs/client -Ddocker.host=unix:///var/run/docker.sock -Pfabric8 docker:build'
+                sh '''
+                    "chmod 666 /var/run/docker.sock"
+                    "mvn -Ddocker.certPath=/certs/client -Ddocker.host=unix:///var/run/docker.sock -Pfabric8 docker:build"
+                sh '''
             }
         }
         stage('Install') {
