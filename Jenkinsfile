@@ -50,7 +50,7 @@ pipeline {
     options {
 //        skipDefaultCheckout true // We are thus able to call checkout scm at our convenience
         timestamps()
-        timeout(time: "${params.TIMEOUT}", unit: 'MINUTES')
+        timeout(time: ${params.TIMEOUT}, unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '4'))
         skipStagesAfterUnstable()
         disableConcurrentBuilds()
