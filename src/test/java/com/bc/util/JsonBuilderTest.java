@@ -15,9 +15,6 @@
  */
 package com.bc.util;
 
-import com.bc.util.Entities;
-import com.bc.util.JsonBuilder;
-import com.bc.util.StringEscapeUtils;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;

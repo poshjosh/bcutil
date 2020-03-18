@@ -15,7 +15,6 @@
  */
 package com.bc.util;
 
-import com.bc.util.QueryParametersConverter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;

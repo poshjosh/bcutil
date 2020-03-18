@@ -16,7 +16,6 @@
 
 package com.bc.util;
 
-import com.bc.util.Util;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
