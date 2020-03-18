@@ -72,8 +72,9 @@ pipeline {
                 stage('Package') {
                     steps {
                         echo '- - - - - - - PACKAGE - - - - - - -'
-                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
-                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} -DskipTests clean package'
+//                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
+//                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} -DskipTests clean package'
+                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} clean:clean jar:jar'
                         sh "mkdir ${env.WORKSPACE}/${MAVEN_CONTAINER_NAME} && docker cp -r ${MAVEN_CONTAINER_NAME}:/target ${env.WORKSPACE}/${MAVEN_CONTAINER_NAME}"
                     }
                     post {
