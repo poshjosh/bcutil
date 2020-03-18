@@ -61,7 +61,7 @@ pipeline {
         pollSCM('H H(8-16)/2 * * 1-5')
     }
     stages {
-        stage('Maven Artifact') {
+        stage('Maven') {
             agent {
                 docker {
                     image 'maven:3-alpine'
@@ -69,30 +69,16 @@ pipeline {
                 }
             }
             stages {
-                stage('Package') {
+                stage('Unit Test & Package') {
                     steps {
                         echo '- - - - - - - PACKAGE - - - - - - -'
                         sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
-//                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} -DskipTests clean package'
-                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} clean:clean jar:jar'
-                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
-//                        sh "mkdir ${env.WORKSPACE}/${MAVEN_CONTAINER_NAME} && docker cp -r ${MAVEN_CONTAINER_NAME}:/target ${env.WORKSPACE}/${MAVEN_CONTAINER_NAME}"
+                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} clean package'
+                        jacoco execPattern: 'target/jacoco.exec'    
                     }
                     post {
                         always {
                             archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
-                        }
-                    }
-                }
-                stage('Unit Tests') {
-                    steps {
-                        echo '- - - - - - - UNIT TESTS - - - - - - -'
-                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
-                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} resources:testResources compiler:testCompile surefire:test'
-//                        jacoco execPattern: 'target/jacoco.exec'    
-                    }
-                    post {
-                        always {
                             junit(
                                 allowEmptyResults: true,
                                 testResults: 'target/surefire-reports/*.xml'
@@ -149,7 +135,7 @@ pipeline {
                 }
             }
         }
-        stage('Docker Image') {
+        stage('Docker') {
             stages{
                 stage('Build Image') {
                     steps {
