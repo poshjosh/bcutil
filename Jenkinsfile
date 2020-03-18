@@ -72,10 +72,11 @@ pipeline {
                 stage('Package') {
                     steps {
                         echo '- - - - - - - PACKAGE - - - - - - -'
-//                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
+                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
 //                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} -DskipTests clean package'
                         sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} clean:clean jar:jar'
-                        sh "mkdir ${env.WORKSPACE}/${MAVEN_CONTAINER_NAME} && docker cp -r ${MAVEN_CONTAINER_NAME}:/target ${env.WORKSPACE}/${MAVEN_CONTAINER_NAME}"
+                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
+//                        sh "mkdir ${env.WORKSPACE}/${MAVEN_CONTAINER_NAME} && docker cp -r ${MAVEN_CONTAINER_NAME}:/target ${env.WORKSPACE}/${MAVEN_CONTAINER_NAME}"
                     }
                     post {
                         always {
@@ -156,8 +157,9 @@ pipeline {
                         script {
                             echo '- - - - - - - BUILD IMAGE - - - - - - -'
                             sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
-                            sh 'mkdir target'
-                            sh "cp -r ${env.WORKSPACE}/${MAVEN_CONTAINER_NAME} /target"
+//                            sh 'mkdir target'
+//                            sh "cp -r ${env.WORKSPACE}/${MAVEN_CONTAINER_NAME} /target"
+// dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar
                             sh 'cd target'
                             sh 'mkdir dependency'
                             sh 'cd dependency'
