@@ -15,8 +15,6 @@
  */
 package com.bc.util;
 
-import com.bc.util.UrlUtil;
-import com.bc.util.Util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
