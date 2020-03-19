@@ -1,8 +1,6 @@
 #!/usr/bin/env groovy
 /**
  * https://github.com/poshjosh/bcutil
- * @see https://hub.docker.com/_/maven
- * @see https://github.com/carlossg/docker-maven
  */
 pipeline {
     agent any
@@ -48,7 +46,6 @@ pipeline {
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}container"
     }
     options {
-//        skipDefaultCheckout true // We are thus able to call checkout scm at our convenience
         timestamps()
         timeout(time: "${params.TIMEOUT}", unit: 'MINUTES')
         buildDiscarder(logRotator(numToKeepStr: '4'))
@@ -69,16 +66,20 @@ pipeline {
                 }
             }
             stages {
-                stage('Unit Test & Package') {
+                stage('Clean & Build') {
                     steps {
-                        echo '- - - - - - - PACKAGE - - - - - - -'
-                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
-                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} clean package'
+                        echo '- - - - - - - CLEAN & BUILD - - - - - - -'
+                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} clean:clean resources:resources compiler:compile'
+                    }
+                }
+                stage('Unit Tests') {
+                    steps {
+                        echo '- - - - - - - UNIT TESTS - - - - - - -'
+                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} resources:testResources compiler:testCompile surefire:test'
                         jacoco execPattern: 'target/jacoco.exec'    
                     }
                     post {
                         always {
-                            archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
                             junit(
                                 allowEmptyResults: true,
                                 testResults: 'target/surefire-reports/*.xml'
@@ -86,10 +87,22 @@ pipeline {
                         }
                     }
                 }
+                stage('Package') {
+                    steps {
+                        echo '- - - - - - - PACKAGE - - - - - - -'
+                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} jar:jar'
+                    }
+                    post {
+                        always {
+                            archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
+                        }
+                    }
+                }
                 stage('Quality Assurance') {
                     parallel {
                         stage('Integration Tests') {
                             steps {
+                                echo '- - - - - - - INTEGRATION TESTS - - - - - - -'
                                 sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} failsafe:integration-test failsafe:verify'
                                 jacoco execPattern: 'target/jacoco-it.exec'    
                             }
@@ -102,23 +115,26 @@ pipeline {
                                 }
                             }
                         }
-//                        stage('Sanity Check') {
-//                            steps {
-//                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
-//                            }
-//                        }
+                        stage('Sanity Check') {
+                            steps {
+                                echo '- - - - - - - SANITY CHECK - - - - - - -'
+                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
+                            }
+                        }
                         stage('Sonar Scan') {
                             environment {
                                 SONAR = credentials('sonar-creds') // Must have been specified in Jenkins
                                 SONAR_URL = "${params.SONAR_BASE_URL}:${params.SONAR_PORT}"
                             }
                             steps {
+                                echo '- - - - - - - SONAR SCAN - - - - - - -'
                                 sh "mvn -B ${ADDITIONAL_MAVEN_ARGS} sonar:sonar -Dsonar.login=$SONAR_USR -Dsonar.password=$SONAR_PSW -Dsonar.host.url=${SONAR_URL}"
                             }
                         }
                         stage('Documentation') {
                             steps {
-                                sh 'mvn -B site:site'
+                                echo '- - - - - - - DOCUMENTATION - - - - - - -'
+                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} site:site'
                             }
                             post {
                                 always {
@@ -130,6 +146,7 @@ pipeline {
                 }
                 stage('Install Local') {
                     steps {
+                        echo '- - - - - - - INSTALL LOCAL - - - - - - -'
                         sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} source:jar install:install'
                     }
                 }
@@ -139,12 +156,8 @@ pipeline {
             stages{
                 stage('Build Image') {
                     steps {
-//                        checkout scm
+                        echo '- - - - - - - BUILD IMAGE - - - - - - -'
                         script {
-                            echo '- - - - - - - BUILD IMAGE - - - - - - -'
-                            sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
-//                            sh 'mkdir target'
-//                            sh "cp -r ${env.WORKSPACE}/${MAVEN_CONTAINER_NAME} /target"
 // dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar
                             sh 'cd target'
                             sh 'mkdir dependency'
@@ -160,32 +173,12 @@ pipeline {
                 }
                 stage('Run Image') {
                     steps {
+                        echo '- - - - - - - RUN IMAGE - - - - - - -'
                         script{
-                            echo '- - - - - - - RUN IMAGE - - - - - - -'
-                            sh 'ls -a && cd .. && ls -a && cd .. && ls -a'
-        //                    def ARGS_MNT = "-v /home/.m2:/root/.m2"
-        //                    def ARGS_EXP = "--expose 9092 --expose ${params.SONAR_PORT}"
-        //                    def NO_PORT = (params.SERVER_PORT == '' || params.SERVER_PORT == null)
-        //                    def ARGS_OPTS
-        //                    if(NO_PORT) {
-        //                        ARGS_OPTS = "JAVA_OPTS=${params.JAVA_OPTS} MAIN_CLASS=${params.MAIN_CLASS} ${params.CMD_LINE_ARGS}"
-        //                    }else{
-        //                        ARGS_OPTS = "--server.port=${params.SERVER_PORT} SERVER_PORT=${params.SERVER_PORT} JAVA_OPTS=${params.JAVA_OPTS} MAIN_CLASS=${params.MAIN_CLASS} ${params.CMD_LINE_ARGS}"
-        //                    }    
-        //                    def RUN_ARGS = "-u root ${ARGS_MNT} ${ARGS_EXP} ${ARGS_OPTS}"
-
-        //                    if(NO_PORT) {
-        //                        docker.image("${IMAGE_NAME}").inside("${RUN_ARGS}") {
-        //                            sh 'java -version'
-        //                        }
-        //                    }else{
-        //                        docker.image("${IMAGE_NAME}")
-        //                            .inside("-p ${params.SERVER_PORT}:${params.SERVER_PORT}", "${RUN_ARGS}") {
-                                docker.image("${IMAGE_NAME}")
-                                    .inside("-p 8092:8092", "--server.port=8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090 MAIN_CLASS=com.looseboxes.cometd.chatservice.CometDApplication") {
-                                        echo '- - - - - - - INSIDE IMAGE - - - - - - -'
-                                }
-        //                    }    
+                            docker.image("${IMAGE_NAME}")
+                                .inside("-p 8092:8092", "--server.port=8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090 MAIN_CLASS=com.looseboxes.cometd.chatservice.CometDApplication") {
+                                    echo '- - - - - - - INSIDE IMAGE - - - - - - -'
+                            }
                         }
                     }
                 }
@@ -194,6 +187,7 @@ pipeline {
                         branch 'master'
                     }
                     steps {
+                        echo '- - - - - - - DEPLOY IMAGE - - - - - - -'
                         script {
                             docker.withRegistry('', 'dockerhub-creds') { // Must have been specified in Jenkins
                                 sh "docker push ${IMAGE_NAME}"
