@@ -9,29 +9,29 @@ pipeline {
      * some of the valid parameter types are booleanParam, choice, file, text, password, run, or string
      */
     parameters {
-        string(name: 'ORG_NAME', defaultValue: "poshjosh", 
+        string(name: 'ORG_NAME', defaultValue: "poshjosh",
                 description: 'Name of the organization. (Docker Hub/GitHub)')
-        string(name: 'SERVER_PROTOCOL', defaultValue: "http", 
+        string(name: 'SERVER_PROTOCOL', defaultValue: "http",
                 description: 'Server protocol, e.g http, https etc')
-        string(name: 'SERVER_BASE_URL', defaultValue: "http://localhost", 
+        string(name: 'SERVER_BASE_URL', defaultValue: "http://localhost",
                 description: 'Server protocol://host, without the port')
         string(name: 'SERVER_PORT', defaultValue: "8092", description: 'Server port')
-        string(name: 'SERVER_CONTEXT', defaultValue: "/", 
+        string(name: 'SERVER_CONTEXT', defaultValue: "/",
                 description: 'Server context path. Must begin with a forward slash / ')
         string(name: 'JAVA_OPTS',
                 defaultValue: "-XX:+TieredCompilation -noverify -XX:TieredStopAtLevel=1 -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap",
                 description: 'Java environment variables')
-        string(name: 'CMD_LINE_ARGS', 
+        string(name: 'CMD_LINE_ARGS',
                 defaultValue: 'spring.jmx.enabled=false',
                 description: 'Command line arguments')
-        string(name: 'MAIN_CLASS', 
-                defaultValue: 'com.looseboxes.cometd.chatservice.CometDApplication', 
+        string(name: 'MAIN_CLASS',
+                defaultValue: 'com.looseboxes.cometd.chatservice.CometDApplication',
                 description: 'Java main class')
         string(name: 'SONAR_BASE_URL', defaultValue: 'http://localhost',
-                description: 'Sonarqube base URL. Will be combined with port to build Sonarqube property sonar.host.url')    
+                description: 'Sonarqube base URL. Will be combined with port to build Sonarqube property sonar.host.url')
         string(name: 'SONAR_PORT', defaultValue: '9000',
-                description: 'Port for Sonarqube server')    
-        string(name: 'TIMEOUT', defaultValue: '45', 
+                description: 'Port for Sonarqube server')
+        string(name: 'TIMEOUT', defaultValue: '45',
                 description: 'Max time that could be spent in MINUTES')
         choice(name: 'DEBUG', choices: ['Y', 'N'], description: 'Debug?')
     }
@@ -76,16 +76,16 @@ pipeline {
                     steps {
                         echo '- - - - - - - UNIT TESTS - - - - - - -'
 //                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} resources:testResources compiler:testCompile surefire:test'
-                        jacoco execPattern: 'target/jacoco.exec'    
+//                        jacoco execPattern: 'target/jacoco.exec'
                     }
-                    post {
-                        always {
-                            junit(
-                                allowEmptyResults: true,
-                                testResults: 'target/surefire-reports/*.xml'
-                            )
-                        }
-                    }
+//                    post {
+//                        always {
+//                            junit(
+//                                allowEmptyResults: true,
+//                                testResults: 'target/surefire-reports/*.xml'
+//                            )
+//                        }
+//                    }
                 }
                 stage('Package') {
                     steps {
@@ -104,7 +104,7 @@ pipeline {
                             steps {
                                 echo '- - - - - - - INTEGRATION TESTS - - - - - - -'
                                 sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} failsafe:integration-test failsafe:verify'
-                                jacoco execPattern: 'target/jacoco-it.exec'    
+                                jacoco execPattern: 'target/jacoco-it.exec'
                             }
                             post {
                                 always {
@@ -205,12 +205,12 @@ pipeline {
                     try {
                         timeout(time: 60, unit: 'SECONDS') {
                             deleteDir() // Clean up workspace
-                        } 
+                        }
                     } catch (org.jenkinsci.plugins.workflow.steps.FlowInterruptedException e) {
-                        // we re-throw as a different error, that would not 
+                        // we re-throw as a different error, that would not
                         // cause retry() to fail (workaround for issue JENKINS-51454)
                         error 'Timeout!'
-                    } 
+                    }
                 } // retry ends
             }
             sh "docker system prune -f --volumes"
