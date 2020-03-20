@@ -103,22 +103,22 @@ pipeline {
                         stage('Integration Tests') {
                             steps {
                                 echo '- - - - - - - INTEGRATION TESTS - - - - - - -'
-                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} failsafe:integration-test failsafe:verify'
-                                jacoco execPattern: 'target/jacoco-it.exec'
+//                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} failsafe:integration-test failsafe:verify'
+//                                jacoco execPattern: 'target/jacoco-it.exec'
                             }
-                            post {
-                                always {
-                                    junit(
-                                        allowEmptyResults: true,
-                                        testResults: 'target/failsafe-reports/*.xml'
-                                    )
-                                }
-                            }
+//                            post {
+//                                always {
+//                                    junit(
+//                                        allowEmptyResults: true,
+//                                        testResults: 'target/failsafe-reports/*.xml'
+//                                    )
+//                                }
+//                            }
                         }
                         stage('Sanity Check') {
                             steps {
                                 echo '- - - - - - - SANITY CHECK - - - - - - -'
-                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
+//                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
                             }
                         }
                         stage('Sonar Scan') {
@@ -128,19 +128,19 @@ pipeline {
                             }
                             steps {
                                 echo '- - - - - - - SONAR SCAN - - - - - - -'
-                                sh "mvn -B ${ADDITIONAL_MAVEN_ARGS} sonar:sonar -Dsonar.login=$SONAR_USR -Dsonar.password=$SONAR_PSW -Dsonar.host.url=${SONAR_URL}"
+//                                sh "mvn -B ${ADDITIONAL_MAVEN_ARGS} sonar:sonar -Dsonar.login=$SONAR_USR -Dsonar.password=$SONAR_PSW -Dsonar.host.url=${SONAR_URL}"
                             }
                         }
                         stage('Documentation') {
                             steps {
                                 echo '- - - - - - - DOCUMENTATION - - - - - - -'
-                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} site:site'
+//                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} site:site'
                             }
-                            post {
-                                always {
-                                    publishHTML(target: [reportName: 'Site', reportDir: 'target/site', reportFiles: 'index.html', keepAll: false])
-                                }
-                            }
+//                            post {
+//                                always {
+//                                    publishHTML(target: [reportName: 'Site', reportDir: 'target/site', reportFiles: 'index.html', keepAll: false])
+//                                }
+//                            }
                         }
                     }
                 }
