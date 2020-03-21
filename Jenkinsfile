@@ -90,7 +90,9 @@ pipeline {
                 stage('Package') {
                     steps {
                         echo '- - - - - - - PACKAGE - - - - - - -'
+                        echo "${WORKSPACE}"
                         sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} jar:jar'
+                        sh 'ls -a && cd .. ls -a && cd .. ls -a && cd .. ls -a'
                     }
                     post {
                         always {
@@ -157,11 +159,15 @@ pipeline {
                 stage('Build Image') {
                     steps {
                         echo '- - - - - - - BUILD IMAGE - - - - - - -'
+                        echo "${WORKSPACE}"
+                        sh 'ls -a && cd .. ls -a && cd .. ls -a && cd .. ls -a'
                         script {
-// a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar
-                            sh 'cd target'
-                            sh 'mkdir dependency'
-                            sh 'cd dependency'
+// a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
+                            sh 'mkdir -r target/dependency'
+                            sh "cp -r ${WORKSPACE}/target target"
+                            sh 'cd target/dependency'
+//                            sh 'mkdir dependency'
+//                            sh 'cd dependency'
                             sh 'jar -xf ../*.jar'
                             def additionalBuildArgs = "--pull"
                             if (env.BRANCH_NAME == "master") {
@@ -174,10 +180,14 @@ pipeline {
                 stage('Run Image') {
                     steps {
                         echo '- - - - - - - RUN IMAGE - - - - - - -'
+                        echo "${WORKSPACE}"
+                        sh 'ls -a && cd .. ls -a && cd .. ls -a && cd .. ls -a'
                         script{
                             docker.image("${IMAGE_NAME}")
                                 .inside("-p 8092:8092", "--server.port=8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090 MAIN_CLASS=com.looseboxes.cometd.chatservice.CometDApplication") {
                                     echo '- - - - - - - INSIDE IMAGE - - - - - - -'
+                                    echo "${WORKSPACE}"
+                                    sh 'ls -a && cd .. ls -a && cd .. ls -a && cd .. ls -a'
                             }
                         }
                     }
