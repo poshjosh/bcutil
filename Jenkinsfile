@@ -173,20 +173,18 @@ pipeline {
                 stage('Run Image') {
                     steps {
                         echo '- - - - - - - RUN IMAGE - - - - - - -'
-//                        echo "Workspace = ${WORKSPACE}"
-//                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
                         script{
-                            docker.image("${IMAGE_NAME}")
-                                .inside("-p 8092:8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090") {
-                                    echo '- - - - - - - INSIDE IMAGE 0 - - - - - - -'
-                                    echo "Workspace = ${WORKSPACE}"
-//                                    sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
-                            }
                             docker.image("${IMAGE_NAME}")
                                 .withRun("-p 8092:8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090") {
                                     echo '- - - - - - - INSIDE IMAGE 1 - - - - - - -'
                                     echo "Workspace = ${WORKSPACE}"
-//                                    sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
+                                    sh "curl --retry 5 --retry-connrefused --connect-timeout 5 --max-time 5 ${SERVER_URL}"
+                            }
+                            docker.image("${IMAGE_NAME}")
+                                .inside("-p 8092:8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090") {
+                                    echo '- - - - - - - INSIDE IMAGE 0 - - - - - - -'
+                                    echo "Workspace = ${WORKSPACE}"
+                                    sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
                             }
                         }
                     }
