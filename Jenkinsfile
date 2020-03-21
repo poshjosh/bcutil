@@ -164,11 +164,7 @@ pipeline {
                         script {
 // a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
                             sh "cp -r ${MAVEN_WORKSPACE}/target target"
-//                            echo 'Next 2 ls commands should list similar directories and files'
-//                            sh "cd ${MAVEN_WORKSPACE}/target && ls -a"
-//                            sh "cd target && ls -a"
                             sh "cd target && mkdir dependency && cd dependency && find ${WORKSPACE}/target -type f -name '*.jar' -exec jar -xf {} ';'"
-//                            sh 'cd target/dependency && ls -a'
                             def additionalBuildArgs = "--pull --build-arg MAIN_CLASS=com.looseboxes.cometd.chatservice.CometDApplication"
                             docker.build("${IMAGE_NAME}", "${additionalBuildArgs} .")
                         }
@@ -182,15 +178,15 @@ pipeline {
                         script{
                             docker.image("${IMAGE_NAME}")
                                 .inside("-p 8092:8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090") {
-                                    echo '- - - - - - - INSIDE IMAGE - - - - - - -'
+                                    echo '- - - - - - - INSIDE IMAGE 0 - - - - - - -'
                                     echo "Workspace = ${WORKSPACE}"
-                                    sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
+//                                    sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
                             }
                             docker.image("${IMAGE_NAME}")
                                 .withRun("-p 8092:8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090") {
-                                    echo '- - - - - - - INSIDE IMAGE - - - - - - -'
+                                    echo '- - - - - - - INSIDE IMAGE 1 - - - - - - -'
                                     echo "Workspace = ${WORKSPACE}"
-                                    sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
+//                                    sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
                             }
                         }
                     }
