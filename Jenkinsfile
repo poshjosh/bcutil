@@ -161,11 +161,6 @@ pipeline {
             }
         }
         stage('Docker') {
-            agent {
-                node {
-                    customWorkspace "${MAVEN_WORKSPACE}"
-                }
-            }
             stages{
                 stage('Build Image') {
                     steps {
