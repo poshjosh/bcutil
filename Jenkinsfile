@@ -170,12 +170,10 @@ pipeline {
                         sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
                         script {
 // a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
-//                            sh 'mkdir -p target/dependency'
-//                            sh "cp -r ${MAVEN_WORKSPACE}/target target"
-//                            sh 'cd target/dependency'
-                            sh 'cd target && mkdir dependency && cd dependency'
+                            sh 'mkdir -p target/dependency'
+                            sh "cp -r ${MAVEN_WORKSPACE}/target target"
+                            sh 'cd target/dependency'
                             sh "find ${WORKSPACE}/target -type f -name '*.jar' -exec jar -xf {} ';'"
-//                            sh "jar -xf ${WORKSPACE}/target/*.jar"
                             def additionalBuildArgs = "--pull"
                             if (env.BRANCH_NAME == "master") {
                                 additionalBuildArgs = "--pull --no-cache"
