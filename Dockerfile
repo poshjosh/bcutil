@@ -11,6 +11,7 @@ COPY ${DEPENDENCY_DIR}/META-INF /app/META-INF
 # Uncomment for Spring Boot
 # COPY ${DEPENDENCY_DIR}/BOOT-INF/classes /app
 COPY start.sh .
+RUN chmod +x /start.sh
 ARG JAVA_OPTS
 ARG MAIN_CLASS
 ENTRYPOINT ["/start.sh"]
