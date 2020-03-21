@@ -190,11 +190,12 @@ pipeline {
                     }
                 }
                 stage('Deploy Image') {
-                    when {
-                        branch 'master'
-                    }
+//                    when {
+//                        branch 'master'
+//                    }
                     steps {
                         echo '- - - - - - - DEPLOY IMAGE - - - - - - -'
+                        sh 'printenv'
                         script {
                             docker.withRegistry('', 'dockerhub-creds') { // Must have been specified in Jenkins
                                 sh "docker push ${IMAGE_NAME}"
