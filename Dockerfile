@@ -1,7 +1,6 @@
 # Repo: https://github.com/poshjosh/bcutil
 # ----------------------------------------
 FROM openjdk:8-jdk-alpine
-RUN ls -a && cd .. && ls -a
 VOLUME /tmp
 ARG SERVER_PORT
 RUN test -z "${SERVER_PORT}" || EXPOSE "${SERVER_PORT}" && :
