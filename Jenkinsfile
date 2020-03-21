@@ -168,8 +168,8 @@ pipeline {
                             sh "cp -r ${MAVEN_WORKSPACE}/target target"
                             sh 'cd target/dependency'
                             sh "find ${WORKSPACE}/target -type f -name '*.jar' -exec jar -xf {} ';'"
-                            def additionalBuildArgs = "--pull DEPENDENCY_DIR=${WORKSPACE}/target/dependency"
-                            docker.build("${IMAGE_NAME}", "${additionalBuildArgs} .")
+                            def additionalBuildArgs = "--pull"
+                            docker.build("${IMAGE_NAME}", "${additionalBuildArgs} ${WORKSPACE}")
                         }
                     }
                 }
