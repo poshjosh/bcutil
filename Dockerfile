@@ -2,7 +2,7 @@
 # ----------------------------------------
 FROM openjdk:8-jdk-alpine
 #FROM maven:3-alpine
-VOLUME /tmp
+VOLUME /tmp1
 ARG SERVER_PORT
 RUN test -z "${SERVER_PORT}" || EXPOSE "${SERVER_PORT}" && :
 ARG DEPENDENCY=target/dependency

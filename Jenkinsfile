@@ -70,9 +70,7 @@ pipeline {
                 stage('Clean & Build') {
                     steps {
                         echo '- - - - - - - CLEAN & BUILD - - - - - - -'
-                        echo "Workspace = ${WORKSPACE}"
                         sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} clean:clean resources:resources compiler:compile'
-                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
                         script {
                             MAVEN_WORKSPACE = WORKSPACE
                         }
@@ -96,9 +94,7 @@ pipeline {
                 stage('Package') {
                     steps {
                         echo '- - - - - - - PACKAGE - - - - - - -'
-                        echo "Workspace = ${WORKSPACE}"
                         sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} jar:jar'
-                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
                     }
                     post {
                         always {
@@ -165,11 +161,9 @@ pipeline {
                 stage('Build Image') {
                     steps {
                         echo '- - - - - - - BUILD IMAGE - - - - - - -'
-                        echo "Workspace = ${WORKSPACE}"
-                        echo "Maven Workspace = ${MAVEN_WORKSPACE}"
-                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
                         script {
 // a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
+                            sh 'printenv'
                             sh 'mkdir -p target/dependency'
                             sh "cp -r ${MAVEN_WORKSPACE}/target target"
                             sh 'cd target/dependency'
