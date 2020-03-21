@@ -44,6 +44,7 @@ pipeline {
         SERVER_URL = "${params.SERVER_BASE_URL}:${params.SERVER_PORT}${params.SERVER_CONTEXT}"
         ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X' : ''}"
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}container"
+        MAVEN_WORKSPACE = ''
     }
     options {
         timestamps()
@@ -69,7 +70,12 @@ pipeline {
                 stage('Clean & Build') {
                     steps {
                         echo '- - - - - - - CLEAN & BUILD - - - - - - -'
+                        echo "Workspace = ${WORKSPACE}"
                         sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} clean:clean resources:resources compiler:compile'
+                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
+                        script {
+                            MAVEN_WORKSPACE = WORKSPACE
+                        }
                     }
                 }
                 stage('Unit Tests') {
@@ -90,9 +96,9 @@ pipeline {
                 stage('Package') {
                     steps {
                         echo '- - - - - - - PACKAGE - - - - - - -'
-                        echo "${WORKSPACE}"
+                        echo "Workspace = ${WORKSPACE}"
                         sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} jar:jar'
-                        sh 'ls -a && cd .. ls -a && cd .. ls -a && cd .. ls -a'
+                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
                     }
                     post {
                         always {
@@ -159,12 +165,13 @@ pipeline {
                 stage('Build Image') {
                     steps {
                         echo '- - - - - - - BUILD IMAGE - - - - - - -'
-                        echo "${WORKSPACE}"
-                        sh 'ls -a && cd .. ls -a && cd .. ls -a && cd .. ls -a'
+                        echo "Workspace = ${WORKSPACE}"
+                        echo "Maven Workspace = ${MAVEN_WORKSPACE}"
+                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
                         script {
 // a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
-                            sh 'mkdir -r target/dependency'
-                            sh "cp -r ${WORKSPACE}/target target"
+                            sh 'mkdir -p target/dependency'
+                            sh "cp -r ${MAVEN_WORKSPACE}/target target"
                             sh 'cd target/dependency'
 //                            sh 'mkdir dependency'
 //                            sh 'cd dependency'
@@ -180,14 +187,14 @@ pipeline {
                 stage('Run Image') {
                     steps {
                         echo '- - - - - - - RUN IMAGE - - - - - - -'
-                        echo "${WORKSPACE}"
-                        sh 'ls -a && cd .. ls -a && cd .. ls -a && cd .. ls -a'
+                        echo "Workspace = ${WORKSPACE}"
+                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
                         script{
                             docker.image("${IMAGE_NAME}")
                                 .inside("-p 8092:8092", "--server.port=8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090 MAIN_CLASS=com.looseboxes.cometd.chatservice.CometDApplication") {
                                     echo '- - - - - - - INSIDE IMAGE - - - - - - -'
-                                    echo "${WORKSPACE}"
-                                    sh 'ls -a && cd .. ls -a && cd .. ls -a && cd .. ls -a'
+                                    echo "Workspace = ${WORKSPACE}"
+                                    sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
                             }
                         }
                     }
