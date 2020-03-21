@@ -180,14 +180,18 @@ pipeline {
 //                        echo "Workspace = ${WORKSPACE}"
 //                        sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
                         script{
+// If you want to a command line argument
+//                            sh "docker run ${IMAGE_NAME} --<key>=<val>"
+// If you want to change server.port and pass it as a command line argument
+//                            sh "docker run ${IMAGE_NAME} --server.port=8092"
                             docker.image("${IMAGE_NAME}")
-                                .inside("-p 8092:8092 --server.port=8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090 MAIN_CLASS=com.looseboxes.cometd.chatservice.CometDApplication") {
+                                .inside("-p 8092:8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090 MAIN_CLASS=com.looseboxes.cometd.chatservice.CometDApplication") {
                                     echo '- - - - - - - INSIDE IMAGE - - - - - - -'
                                     echo "Workspace = ${WORKSPACE}"
                                     sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
                             }
                             docker.image("${IMAGE_NAME}")
-                                .withRun("-p 8092:8092 --server.port=8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090 MAIN_CLASS=com.looseboxes.cometd.chatservice.CometDApplication") {
+                                .withRun("-p 8092:8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090 MAIN_CLASS=com.looseboxes.cometd.chatservice.CometDApplication") {
                                     echo '- - - - - - - INSIDE IMAGE - - - - - - -'
                                     echo "Workspace = ${WORKSPACE}"
                                     sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
