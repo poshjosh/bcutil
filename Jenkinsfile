@@ -164,9 +164,10 @@ pipeline {
                         script {
 // a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
                             sh "cp -r ${MAVEN_WORKSPACE}/target target"
-                            sh 'cd target && mkdir dependency && cd dependency'
-                            sh "find ${WORKSPACE}/target -type f -name '*.jar' -exec jar -xf {} ';'"
+//                            sh 'cd target && mkdir dependency && cd dependency'
+                            sh "cd target && mkdir dependency && cd dependency && find ${WORKSPACE}/target -type f -name '*.jar' -exec jar -xf {} ';'"
                             sh 'cd target/dependency && ls -a'
+                            sh 'cd ${MAVEN_WORKSPACE}/target/dependency && ls -a'
                             def additionalBuildArgs = "--pull"
                             docker.build("${IMAGE_NAME}", "${additionalBuildArgs} .")
                         }
