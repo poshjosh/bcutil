@@ -168,7 +168,7 @@ pipeline {
                             sh "cp -r ${MAVEN_WORKSPACE}/target target"
                             sh 'cd target && mkdir dependency && cd dependency'
                             sh "find ${WORKSPACE}/target -type f -name '*.jar' -exec jar -xf {} ';'"
-                            sh 'ls -a && cd target && ls -a && cd dependency && ls -a'
+//                            sh 'ls -a && cd target && ls -a && cd dependency && ls -a'
                             sh 'ls -a && cd .. && ls -a && cd .. && ls -a'
                             def additionalBuildArgs = "--pull --build-arg DEPENDENCY_DIR=${WORKSPACE}/target/dependency"
                             docker.build("${IMAGE_NAME}", "${additionalBuildArgs} .")
