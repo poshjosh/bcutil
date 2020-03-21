@@ -147,7 +147,7 @@ pipeline {
                 stage('Install Local') {
                     steps {
                         echo '- - - - - - - INSTALL LOCAL - - - - - - -'
-                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} source:jar install:install'
+//                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} source:jar install:install'
                     }
                 }
             }
@@ -158,7 +158,7 @@ pipeline {
                     steps {
                         echo '- - - - - - - BUILD IMAGE - - - - - - -'
                         script {
-// dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar
+// a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar
                             sh 'cd target'
                             sh 'mkdir dependency'
                             sh 'cd dependency'
