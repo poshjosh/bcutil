@@ -41,11 +41,11 @@ pipeline {
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_WORKSPACE = ''
         APP_HAS_SERVER = "${params.APP_PORT != null && params.APP_PORT != ''}"
-        SERVER_URL = "${params.SERVER_BASE_URL}:${params.APP_PORT}${params.SERVER_CONTEXT}"
-        SERVER_URL = "${APP_HAS_SERVER ? SERVER_URL : null}"
+//        SERVER_URL = "${params.SERVER_BASE_URL}:${params.APP_PORT}${params.SERVER_CONTEXT}"
+        SERVER_URL = "${APP_HAS_SERVER ? params.SERVER_BASE_URL + ':' + params.APP_PORT + params.SERVER_CONTEXT : null}"
 // Add server port to command line args
-        CMD_LINE_ARGS_WITH_APP_PORT = "${CMD_LINE_ARGS} --server-port=${params.APP_PORT}"
-        CMD_LINE_ARGS = "${APP_HAS_SERVER ? CMD_LINE_ARGS_WITH_APP_PORT : CMD_LINE_ARGS}"
+//        CMD_LINE_ARGS_WITH_APP_PORT = "${CMD_LINE_ARGS} --server-port=${params.APP_PORT}"
+        CMD_LINE_ARGS = "${APP_HAS_SERVER ? CMD_LINE_ARGS + '--server-port=' + params.APP_PORT : CMD_LINE_ARGS}"
         ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X' : ''}"
     }
     options {
