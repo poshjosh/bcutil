@@ -51,8 +51,6 @@ pipeline {
         MAVEN_WORKSPACE = ''
         APP_HAS_SERVER = "${params.APP_PORT != null && params.APP_PORT != ''}"
         SERVER_URL = "${APP_HAS_SERVER == true ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : null}"
-// Add server port to command line args
-        CMD_LINE_ARGS = "${APP_HAS_SERVER == true ? CMD_LINE_ARGS + ' --server-port=' + params.APP_PORT : CMD_LINE_ARGS}"
         ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X' : ''}"
     }
     options {
@@ -204,6 +202,7 @@ pipeline {
                     steps {
                         echo '- - - - - - - RUN IMAGE - - - - - - -'
                         script{
+
                             def RUN_ARGS = '-v /home/.m2:/root/.m2'
                             if(params.APP_PORT != null && params.APP_PORT != '') {
                                 RUN_ARGS = "${RUN_ARGS} -p ${params.APP_PORT}:${params.APP_PORT}"
@@ -211,9 +210,18 @@ pipeline {
                             if(params.JAVA_OPTS != null && params.JAVA_OPTS != '') {
                                 RUN_ARGS = "${RUN_ARGS} -e JAVA_OPTS=${JAVA_OPTS}"
                             }
+
+                            // Add server port to command line args
+                            def CMD_LINE
+                            if(APP_HAS_SERVER == true) {
+                                CMD_LINE = params.CMD_LINE_ARGS + ' --server-port=' + params.APP_PORT
+                            }else{
+                                CMD_LINE = params.CMD_LINE_ARGS
+                            }
+
                             docker.image("${IMAGE_NAME}")
-                                .withRun("${RUN_ARGS}", "${CMD_LINE_ARGS}") {
-// SERVER_URL is an environment variable not a pipeline parameter
+                                .withRun("${RUN_ARGS}", "${CMD_LINE}") {
+                                    // SERVER_URL is an environment variable not a pipeline parameter
                                     if(APP_HAS_SERVER == true) {
                                         sh "curl --retry 5 --retry-connrefused --connect-timeout 5 --max-time 5 ${SERVER_URL}"
                                     }else {
