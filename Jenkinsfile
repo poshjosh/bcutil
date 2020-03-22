@@ -17,8 +17,17 @@ pipeline {
         string(name: 'APP_PORT', defaultValue: '', description: 'Server port')
         string(name: 'APP_CONTEXT', defaultValue: '/',
                 description: 'Server context path. Must begin with a forward slash / ')
+// @issue #001
+// Only one java option supported. (e.g '-XX:+TieredCompilation')
+// When more than one specified, encountered error: unknown shorthand flag: 'X' in -XX:TieredStopAtLevel=1
+// --build-arg 'JAVA_OPTS=-XX:+TieredCompilation' '-XX:TieredStopAtLevel=1' -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap
+// From the above the multiplie java opts where separated by jenkins
+// I tried using single, double and then tripple quotes, but the error still occurred
+//        string(name: 'JAVA_OPTS',
+//                defaultValue: '-XX:TieredStopAtLevel=1 -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap',
+//                description: 'Java environment variables')
         string(name: 'JAVA_OPTS',
-                defaultValue: '''-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap''',
+                defaultValue: '-XX:TieredStopAtLevel=1',
                 description: 'Java environment variables')
         string(name: 'CMD_LINE_ARGS', defaultValue: '',
                 description: 'Command line arguments')
