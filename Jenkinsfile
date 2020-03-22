@@ -72,7 +72,7 @@ pipeline {
                         echo '- - - - - - - CLEAN & BUILD - - - - - - -'
                         script {
                             MAVEN_WORKSPACE = WORKSPACE
-                            if(DEBUG = 'Y') {
+                            if(DEBUG == 'Y') {
                                 echo '- - - - - - - Printing Environment - - - - - - -'
                                 sh 'printenv'
                                 echo '- - - - - - - Done Printing Environment - - - - - - -'
@@ -177,7 +177,7 @@ pipeline {
                     steps {
                         echo '- - - - - - - BUILD IMAGE - - - - - - -'
                         script {
-                            if(DEBUG = 'Y') {
+                            if(DEBUG == 'Y') {
                                 echo '- - - - - - - Printing Environment - - - - - - -'
                                 sh 'printenv'
                                 echo '- - - - - - - Done Printing Environment - - - - - - -'
