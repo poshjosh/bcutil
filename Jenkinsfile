@@ -127,6 +127,9 @@ pipeline {
                                 echo '- - - - - - - INTEGRATION TESTS - - - - - - -'
                                 sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} failsafe:integration-test failsafe:verify'
                                 jacoco execPattern: 'target/jacoco-it.exec'
+                                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                    sh "exit 1"
+                                }
                             }
                             post {
                                 always {
@@ -141,6 +144,9 @@ pipeline {
                             steps {
                                 echo '- - - - - - - SANITY CHECK - - - - - - -'
                                 sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
+                                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                    sh "exit 1"
+                                }
                             }
                         }
                         stage('Sonar Scan') {
@@ -156,12 +162,18 @@ pipeline {
                             steps {
                                 echo '- - - - - - - SONAR SCAN - - - - - - -'
                                 sh "mvn -B ${ADDITIONAL_MAVEN_ARGS} sonar:sonar -Dsonar.login=$SONAR_USR -Dsonar.password=$SONAR_PSW -Dsonar.host.url=${SONAR_URL}"
+                                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                    sh "exit 1"
+                                }
                             }
                         }
                         stage('Documentation') {
                             steps {
                                 echo '- - - - - - - DOCUMENTATION - - - - - - -'
                                 sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} site:site'
+                                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                    sh "exit 1"
+                                }
                             }
                             post {
                                 always {
@@ -175,6 +187,9 @@ pipeline {
                     steps {
                         echo '- - - - - - - INSTALL LOCAL - - - - - - -'
                         sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} source:jar install:install'
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh "exit 1"
+                        }
                     }
                 }
             }
