@@ -22,7 +22,7 @@ pipeline {
                 description: 'Java environment variables')
         string(name: 'CMD_LINE_ARGS', defaultValue: '',
                 description: 'Command line arguments')
-        string(name: 'MAIN_CLASS', defaultValue: '',
+        string(name: 'MAIN_CLASS', defaultValue: 'com.bc.util.Main',
                 description: 'Java main class')
         string(name: 'SONAR_BASE_URL', defaultValue: 'http://localhost',
                 description: 'Sonarqube base URL. Will be combined with port to build Sonarqube property sonar.host.url')
