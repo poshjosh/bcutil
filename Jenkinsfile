@@ -18,7 +18,7 @@ pipeline {
         string(name: 'APP_CONTEXT', defaultValue: '/',
                 description: 'Server context path. Must begin with a forward slash / ')
         string(name: 'JAVA_OPTS',
-                defaultValue: '-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap',
+                defaultValue: '''-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap''',
                 description: 'Java environment variables')
         string(name: 'CMD_LINE_ARGS', defaultValue: '',
                 description: 'Command line arguments')
