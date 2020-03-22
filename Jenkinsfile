@@ -4,7 +4,9 @@
  * At a minimum, provide the MAIN_CLASS and where applicable SONAR_PORT and
  */
 pipeline {
+
     agent any
+
     /**
      * parameters directive provides a list of parameters which a user should provide when triggering the Pipeline
      * some of the valid parameter types are booleanParam, choice, file, text, password, run, or string
@@ -92,17 +94,17 @@ pipeline {
                 stage('Unit Tests') {
                     steps {
                         echo '- - - - - - - UNIT TESTS - - - - - - -'
-//                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} resources:testResources compiler:testCompile surefire:test'
-//                        jacoco execPattern: 'target/jacoco.exec'
+                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} resources:testResources compiler:testCompile surefire:test'
+                        jacoco execPattern: 'target/jacoco.exec'
                     }
-//                    post {
-//                        always {
-//                            junit(
-//                                allowEmptyResults: true,
-//                                testResults: 'target/surefire-reports/*.xml'
-//                            )
-//                        }
-//                    }
+                    post {
+                        always {
+                            junit(
+                                allowEmptyResults: true,
+                                testResults: 'target/surefire-reports/*.xml'
+                            )
+                        }
+                    }
                 }
                 stage('Package') {
                     steps {
@@ -120,22 +122,22 @@ pipeline {
                         stage('Integration Tests') {
                             steps {
                                 echo '- - - - - - - INTEGRATION TESTS - - - - - - -'
-//                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} failsafe:integration-test failsafe:verify'
-//                                jacoco execPattern: 'target/jacoco-it.exec'
+                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} failsafe:integration-test failsafe:verify'
+                                jacoco execPattern: 'target/jacoco-it.exec'
                             }
-//                            post {
-//                                always {
-//                                    junit(
-//                                        allowEmptyResults: true,
-//                                        testResults: 'target/failsafe-reports/*.xml'
-//                                    )
-//                                }
-//                            }
+                            post {
+                                always {
+                                    junit(
+                                        allowEmptyResults: true,
+                                        testResults: 'target/failsafe-reports/*.xml'
+                                    )
+                                }
+                            }
                         }
                         stage('Sanity Check') {
                             steps {
                                 echo '- - - - - - - SANITY CHECK - - - - - - -'
-//                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
+                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
                             }
                         }
                         stage('Sonar Scan') {
@@ -150,26 +152,26 @@ pipeline {
                             }
                             steps {
                                 echo '- - - - - - - SONAR SCAN - - - - - - -'
-//                                sh "mvn -B ${ADDITIONAL_MAVEN_ARGS} sonar:sonar -Dsonar.login=$SONAR_USR -Dsonar.password=$SONAR_PSW -Dsonar.host.url=${SONAR_URL}"
+                                sh "mvn -B ${ADDITIONAL_MAVEN_ARGS} sonar:sonar -Dsonar.login=$SONAR_USR -Dsonar.password=$SONAR_PSW -Dsonar.host.url=${SONAR_URL}"
                             }
                         }
                         stage('Documentation') {
                             steps {
                                 echo '- - - - - - - DOCUMENTATION - - - - - - -'
-//                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} site:site'
+                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} site:site'
                             }
-//                            post {
-//                                always {
-//                                    publishHTML(target: [reportName: 'Site', reportDir: 'target/site', reportFiles: 'index.html', keepAll: false])
-//                                }
-//                            }
+                            post {
+                                always {
+                                    publishHTML(target: [reportName: 'Site', reportDir: 'target/site', reportFiles: 'index.html', keepAll: false])
+                                }
+                            }
                         }
                     }
                 }
                 stage('Install Local') {
                     steps {
                         echo '- - - - - - - INSTALL LOCAL - - - - - - -'
-//                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} source:jar install:install'
+                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} source:jar install:install'
                     }
                 }
             }
@@ -185,12 +187,14 @@ pipeline {
                     steps {
                         echo '- - - - - - - BUILD IMAGE - - - - - - -'
                         script {
+
                             if(DEBUG == 'Y') {
                                 echo '- - - - - - - Printing Environment - - - - - - -'
                                 sh 'printenv'
                                 echo '- - - - - - - Done Printing Environment - - - - - - -'
                             }
-// a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
+
+                            // a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
                             sh "cp -r ${MAVEN_WORKSPACE}/target target"
                             sh "cd target && mkdir dependency && cd dependency && find ${WORKSPACE}/target -type f -name '*.jar' -exec jar -xf {} ';'"
                             def customArgs = "--build-arg APP_PORT=${params.APP_PORT} --build-arg MAIN_CLASS=${params.MAIN_CLASS} --build-arg JAVA_OPTS=${params.JAVA_OPTS}"
@@ -240,7 +244,7 @@ pipeline {
                     steps {
                         echo '- - - - - - - DEPLOY IMAGE - - - - - - -'
                         script {
-// Must have been specified in Jenkins
+                            // Must have been specified in Jenkins
                             docker.withRegistry('', 'dockerhub-creds') {
                                 sh "docker push ${IMAGE_NAME}"
                             }
