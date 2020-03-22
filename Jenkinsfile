@@ -26,7 +26,7 @@ pipeline {
                 description: 'Java main class')
         string(name: 'SONAR_BASE_URL', defaultValue: 'http://localhost',
                 description: 'Sonarqube base URL. Will be combined with port to build Sonarqube property sonar.host.url')
-        string(name: 'SONAR_PORT', defaultValue: '',
+        string(name: 'SONAR_PORT', defaultValue: '9000',
                 description: 'Port for Sonarqube server')
         string(name: 'TIMEOUT', defaultValue: '45',
                 description: 'Max time that could be spent in MINUTES')
@@ -70,13 +70,15 @@ pipeline {
                 stage('Clean & Build') {
                     steps {
                         echo '- - - - - - - CLEAN & BUILD - - - - - - -'
-                        echo '- - - - - - - Printing Environment - - - - - - -'
-                        sh 'printenv'
-                        echo '- - - - - - - Done Printing Environment - - - - - - -'
-                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} clean:clean resources:resources compiler:compile'
                         script {
                             MAVEN_WORKSPACE = WORKSPACE
+                            if(DEBUG = 'Y') {
+                                echo '- - - - - - - Printing Environment - - - - - - -'
+                                sh 'printenv'
+                                echo '- - - - - - - Done Printing Environment - - - - - - -'
+                            }
                         }
+                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} clean:clean resources:resources compiler:compile'
                     }
                 }
                 stage('Unit Tests') {
@@ -174,10 +176,12 @@ pipeline {
                 stage('Build Image') {
                     steps {
                         echo '- - - - - - - BUILD IMAGE - - - - - - -'
-                        echo '- - - - - - - Printing Environment - - - - - - -'
-                        sh 'printenv'
-                        echo '- - - - - - - Done Printing Environment - - - - - - -'
                         script {
+                            if(DEBUG = 'Y') {
+                                echo '- - - - - - - Printing Environment - - - - - - -'
+                                sh 'printenv'
+                                echo '- - - - - - - Done Printing Environment - - - - - - -'
+                            }
 // a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
                             sh "cp -r ${MAVEN_WORKSPACE}/target target"
                             sh "cd target && mkdir dependency && cd dependency && find ${WORKSPACE}/target -type f -name '*.jar' -exec jar -xf {} ';'"
