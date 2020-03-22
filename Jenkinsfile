@@ -12,13 +12,13 @@ pipeline {
     parameters {
         string(name: 'ORG_NAME', defaultValue: "poshjosh",
                 description: 'Name of the organization. (Docker Hub/GitHub)')
-        string(name: 'SERVER_BASE_URL', defaultValue: "http://localhost",
+        string(name: 'APP_BASE_URL', defaultValue: "http://localhost",
                 description: 'Server protocol://host, without the port')
         string(name: 'APP_PORT', defaultValue: '', description: 'Server port')
-        string(name: 'SERVER_CONTEXT', defaultValue: "/",
+        string(name: 'APP_CONTEXT', defaultValue: "/",
                 description: 'Server context path. Must begin with a forward slash / ')
         string(name: 'JAVA_OPTS',
-                defaultValue: "-XX:+TieredCompilation -noverify -XX:TieredStopAtLevel=1 -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap",
+                defaultValue: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap",
                 description: 'Java environment variables')
         string(name: 'CMD_LINE_ARGS', defaultValue: '',
                 description: 'Command line arguments')
@@ -41,11 +41,9 @@ pipeline {
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_WORKSPACE = ''
         APP_HAS_SERVER = "${params.APP_PORT != null && params.APP_PORT != ''}"
-//        SERVER_URL = "${params.SERVER_BASE_URL}:${params.APP_PORT}${params.SERVER_CONTEXT}"
-        SERVER_URL = "${APP_HAS_SERVER ? params.SERVER_BASE_URL + ':' + params.APP_PORT + params.SERVER_CONTEXT : null}"
+        SERVER_URL = "${APP_HAS_SERVER ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : null}"
 // Add server port to command line args
-//        CMD_LINE_ARGS_WITH_APP_PORT = "${CMD_LINE_ARGS} --server-port=${params.APP_PORT}"
-        CMD_LINE_ARGS = "${APP_HAS_SERVER ? CMD_LINE_ARGS + '--server-port=' + params.APP_PORT : CMD_LINE_ARGS}"
+        CMD_LINE_ARGS = "${APP_HAS_SERVER ? CMD_LINE_ARGS + ' --server-port=' + params.APP_PORT : CMD_LINE_ARGS}"
         ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X' : ''}"
     }
     options {
@@ -183,7 +181,8 @@ pipeline {
 // a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
                             sh "cp -r ${MAVEN_WORKSPACE}/target target"
                             sh "cd target && mkdir dependency && cd dependency && find ${WORKSPACE}/target -type f -name '*.jar' -exec jar -xf {} ';'"
-                            def customArgs = "--build-arg APP_PORT=${params.APP_PORT} --build-arg JAVA_OPTS=${params.JAVA_OPTS} --build-arg MAIN_CLASS=${params.MAIN_CLASS}"
+//                            def customArgs = "--build-arg APP_PORT=${params.APP_PORT} --build-arg JAVA_OPTS=${params.JAVA_OPTS} --build-arg MAIN_CLASS=${params.MAIN_CLASS}"
+                            def customArgs = "--build-arg JAVA_OPTS=${params.JAVA_OPTS} --build-arg MAIN_CLASS=${params.MAIN_CLASS}"
                             def additionalBuildArgs = "--pull ${customArgs}"
                             docker.build("${IMAGE_NAME}", "${additionalBuildArgs} .")
                         }
@@ -202,13 +201,15 @@ pipeline {
                             }
 //                            try {
 //                                sh "docker run ${RUN_ARGS} ${IMAGE_NAME} ${CMD_LINE_ARGS}"
+// SERVER_URL is an environment variable not a pipeline parameter
 //                                sh "curl --retry 5 --retry-connrefused --connect-timeout 5 --max-time 5 ${SERVER_URL}"
 //                            }finally{
 //                                sh "docker stop ${IMAGE_NAME}"
 //                            }
                             docker.image("${IMAGE_NAME}")
                                 .withRun("${RUN_ARGS}", "${CMD_LINE_ARGS}") {
-                                    if(params.SERVER_URL != null && params.SERVER_URL != '') {
+// SERVER_URL is an environment variable not a pipeline parameter
+                                    if(SERVER_URL != null && SERVER_URL != '') {
                                         sh "curl --retry 5 --retry-connrefused --connect-timeout 5 --max-time 5 ${SERVER_URL}"
                                     }else {
                                         echo "No Server URL"
