@@ -1,6 +1,7 @@
 #!/usr/bin/env groovy
 /**
  * https://github.com/poshjosh/bcutil
+ * At a minimum, provide the MAIN_CLASS and where applicable SONAR_PORT and SERVER_PORT
  */
 pipeline {
     agent any
@@ -11,25 +12,21 @@ pipeline {
     parameters {
         string(name: 'ORG_NAME', defaultValue: "poshjosh",
                 description: 'Name of the organization. (Docker Hub/GitHub)')
-        string(name: 'SERVER_PROTOCOL', defaultValue: "http",
-                description: 'Server protocol, e.g http, https etc')
         string(name: 'SERVER_BASE_URL', defaultValue: "http://localhost",
                 description: 'Server protocol://host, without the port')
-        string(name: 'SERVER_PORT', defaultValue: "8092", description: 'Server port')
+        string(name: 'SERVER_PORT', defaultValue: '', description: 'Server port')
         string(name: 'SERVER_CONTEXT', defaultValue: "/",
                 description: 'Server context path. Must begin with a forward slash / ')
         string(name: 'JAVA_OPTS',
                 defaultValue: "-XX:+TieredCompilation -noverify -XX:TieredStopAtLevel=1 -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap",
                 description: 'Java environment variables')
-        string(name: 'CMD_LINE_ARGS',
-                defaultValue: 'spring.jmx.enabled=false',
+        string(name: 'CMD_LINE_ARGS', defaultValue: '',
                 description: 'Command line arguments')
-        string(name: 'MAIN_CLASS',
-                defaultValue: 'com.looseboxes.cometd.chatservice.CometDApplication',
+        string(name: 'MAIN_CLASS', defaultValue: '',
                 description: 'Java main class')
         string(name: 'SONAR_BASE_URL', defaultValue: 'http://localhost',
                 description: 'Sonarqube base URL. Will be combined with port to build Sonarqube property sonar.host.url')
-        string(name: 'SONAR_PORT', defaultValue: '9000',
+        string(name: 'SONAR_PORT', defaultValue: '',
                 description: 'Port for Sonarqube server')
         string(name: 'TIMEOUT', defaultValue: '45',
                 description: 'Max time that could be spent in MINUTES')
@@ -41,10 +38,13 @@ pipeline {
         APP_ID = "${ARTIFACTID}:${VERSION}"
         IMAGE_REF = "${ORG_NAME}/${APP_ID}"
         IMAGE_NAME = IMAGE_REF.toLowerCase()
-        SERVER_URL = "${params.SERVER_BASE_URL}:${params.SERVER_PORT}${params.SERVER_CONTEXT}"
-        ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X' : ''}"
-        MAVEN_CONTAINER_NAME = "${ARTIFACTID}container"
+        MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_WORKSPACE = ''
+        APP_HAS_SERVER = "${params.SERVER_PORT != null && params.SERVER_PORT != ''"
+        SERVER_URL = "${APP_HAS_SERVER ? params.SERVER_BASE_URL':'params.SERVER_PORT''params.SERVER_CONTEXT : null}"
+// Add server port to command line args
+        CMD_LINE_ARGS = "${APP_HAS_SERVER ? CMD_LINE_ARGS' --server-port='params.SERVER_PORT : CMD_LINE_ARGS}"
+        ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X' : ''}"
     }
     options {
         timestamps()
@@ -70,6 +70,9 @@ pipeline {
                 stage('Clean & Build') {
                     steps {
                         echo '- - - - - - - CLEAN & BUILD - - - - - - -'
+                        echo '- - - - - - - Printing Environment - - - - - - -'
+                        sh 'printenv'
+                        echo '- - - - - - - Done Printing Environment - - - - - - -'
                         sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} clean:clean resources:resources compiler:compile'
                         script {
                             MAVEN_WORKSPACE = WORKSPACE
@@ -126,6 +129,11 @@ pipeline {
                             }
                         }
                         stage('Sonar Scan') {
+                            when {
+                                expression {
+                                    params.SONAR_PORT != null && params.SONAR_PORT != ''
+                                }
+                            }
                             environment {
                                 SONAR = credentials('sonar-creds') // Must have been specified in Jenkins
                                 SONAR_URL = "${params.SONAR_BASE_URL}:${params.SONAR_PORT}"
@@ -157,15 +165,24 @@ pipeline {
             }
         }
         stage('Docker') {
+            when {
+                expression {
+                    params.MAIN_CLASS != null && params.MAIN_CLASS != ''
+                }
+            }
             stages{
                 stage('Build Image') {
                     steps {
                         echo '- - - - - - - BUILD IMAGE - - - - - - -'
+                        echo '- - - - - - - Printing Environment - - - - - - -'
+                        sh 'printenv'
+                        echo '- - - - - - - Done Printing Environment - - - - - - -'
                         script {
 // a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
                             sh "cp -r ${MAVEN_WORKSPACE}/target target"
                             sh "cd target && mkdir dependency && cd dependency && find ${WORKSPACE}/target -type f -name '*.jar' -exec jar -xf {} ';'"
-                            def additionalBuildArgs = "--pull --build-arg MAIN_CLASS=com.looseboxes.cometd.chatservice.CometDApplication"
+                            def customArgs = "--build-arg SERVER_PORT=${params.SERVER_PORT} --build-arg JAVA_OPTS=${params.JAVA_OPTS} --build-arg MAIN_CLASS=${params.MAIN_CLASS}"
+                            def additionalBuildArgs = "--pull ${customArgs}"
                             docker.build("${IMAGE_NAME}", "${additionalBuildArgs} .")
                         }
                     }
@@ -174,30 +191,40 @@ pipeline {
                     steps {
                         echo '- - - - - - - RUN IMAGE - - - - - - -'
                         script{
-                            docker.image("${IMAGE_NAME}")
-                                .withRun("-p 8092:8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090") {
-                                    echo '- - - - - - - INSIDE IMAGE 1 - - - - - - -'
-                                    echo "Workspace = ${WORKSPACE}"
-                                    sh "curl --retry 5 --retry-connrefused --connect-timeout 5 --max-time 5 ${SERVER_URL}"
+                            def RUN_ARGS = '-v /home/.m2:/root/.m2'
+                            if(params.SERVER_PORT != null && params.SERVER_PORT != '') {
+                                RUN_ARGS = "${RUN_ARGS} -p ${params.SERVER_PORT}:${params.SERVER_PORT}"
                             }
+                            if(params.JAVA_OPTS != null && params.JAVA_OPTS != '') {
+                                RUN_ARGS = "${RUN_ARGS} -e JAVA_OPTS=${JAVA_OPTS}"
+                            }
+//                            try {
+//                                sh "docker run ${RUN_ARGS} ${IMAGE_NAME} ${CMD_LINE_ARGS}"
+//                                sh "curl --retry 5 --retry-connrefused --connect-timeout 5 --max-time 5 ${SERVER_URL}"
+//                            }finally{
+//                                sh "docker stop ${IMAGE_NAME}"
+//                            }
                             docker.image("${IMAGE_NAME}")
-                                .inside("-p 8092:8092 -v /home/.m2:/root/.m2 --expose 9092 --expose 9090") {
-                                    echo '- - - - - - - INSIDE IMAGE 0 - - - - - - -'
-                                    echo "Workspace = ${WORKSPACE}"
-                                    sh 'ls -a && cd .. && ls -a && cd .. && ls -a && cd .. && ls -a'
+                                .withRun("${RUN_ARGS}", "${CMD_LINE_ARGS}") {
+                                    if(params.SERVER_URL != null && params.SERVER_URL != '') {
+                                        sh "curl --retry 5 --retry-connrefused --connect-timeout 5 --max-time 5 ${SERVER_URL}"
+                                    }else {
+                                        echo "No Server URL"
+                                    }
                             }
                         }
                     }
                 }
                 stage('Deploy Image') {
-//                    when {
-//                        branch 'master'
-//                    }
+                    when {
+                        beforeAgent true
+                        branch 'master'
+                    }
                     steps {
                         echo '- - - - - - - DEPLOY IMAGE - - - - - - -'
-                        sh 'printenv'
                         script {
-                            docker.withRegistry('', 'dockerhub-creds') { // Must have been specified in Jenkins
+// Must have been specified in Jenkins
+                            docker.withRegistry('', 'dockerhub-creds') {
                                 sh "docker push ${IMAGE_NAME}"
                             }
                         }
