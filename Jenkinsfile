@@ -52,6 +52,7 @@ pipeline {
         APP_HAS_SERVER = "${params.APP_PORT != null && params.APP_PORT != ''}"
         SERVER_URL = "${APP_HAS_SERVER == true ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : null}"
         ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X' : ''}"
+        VOLUME_BINDINGS = '-v /home/.m2:/root/.m2'
     }
     options {
         timestamps()
@@ -70,7 +71,7 @@ pipeline {
             agent {
                 docker {
                     image 'maven:3-alpine'
-                    args "--name ${MAVEN_CONTAINER_NAME} -u root -v /home/.m2:/root/.m2"
+                    args "--name ${MAVEN_CONTAINER_NAME} -u root ${VOLUME_BINDINGS}"
                 }
             }
             stages {
@@ -203,7 +204,7 @@ pipeline {
                         echo '- - - - - - - RUN IMAGE - - - - - - -'
                         script{
 
-                            def RUN_ARGS = '-v /home/.m2:/root/.m2'
+                            def RUN_ARGS = VOLUME_BINDINGS
                             if(params.APP_PORT != null && params.APP_PORT != '') {
                                 RUN_ARGS = "${RUN_ARGS} -p ${params.APP_PORT}:${params.APP_PORT}"
                             }
@@ -234,7 +235,7 @@ pipeline {
                 stage('Deploy Image') {
                     when {
                         beforeAgent true
-                        branch 'master'
+                        branch '*/master'
                     }
                     steps {
                         echo '- - - - - - - DEPLOY IMAGE - - - - - - -'
