@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /**
  * https://github.com/poshjosh/bcutil
- * At a minimum, provide the MAIN_CLASS and where applicable SONAR_PORT and SERVER_PORT
+ * At a minimum, provide the MAIN_CLASS and where applicable SONAR_PORT and
  */
 pipeline {
     agent any
@@ -14,7 +14,7 @@ pipeline {
                 description: 'Name of the organization. (Docker Hub/GitHub)')
         string(name: 'SERVER_BASE_URL', defaultValue: "http://localhost",
                 description: 'Server protocol://host, without the port')
-        string(name: 'SERVER_PORT', defaultValue: '', description: 'Server port')
+        string(name: 'APP_PORT', defaultValue: '', description: 'Server port')
         string(name: 'SERVER_CONTEXT', defaultValue: "/",
                 description: 'Server context path. Must begin with a forward slash / ')
         string(name: 'JAVA_OPTS',
@@ -40,10 +40,12 @@ pipeline {
         IMAGE_NAME = IMAGE_REF.toLowerCase()
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_WORKSPACE = ''
-        APP_HAS_SERVER = "${params.SERVER_PORT != null && params.SERVER_PORT != ''}"
-        SERVER_URL = "${APP_HAS_SERVER ? params.SERVER_BASE_URL':'params.SERVER_PORT''params.SERVER_CONTEXT : null}"
+        APP_HAS_SERVER = "${params.APP_PORT != null && params.APP_PORT != ''}"
+        SERVER_URL = "${params.SERVER_BASE_URL}:${params.APP_PORT}${params.SERVER_CONTEXT}"
+        SERVER_URL = "${APP_HAS_SERVER ? SERVER_URL : null}"
 // Add server port to command line args
-        CMD_LINE_ARGS = "${APP_HAS_SERVER ? CMD_LINE_ARGS' --server-port='params.SERVER_PORT : CMD_LINE_ARGS}"
+        CMD_LINE_ARGS_WITH_APP_PORT = "${CMD_LINE_ARGS} --server-port=${params.APP_PORT}"
+        CMD_LINE_ARGS = "${APP_HAS_SERVER ? CMD_LINE_ARGS_WITH_APP_PORT : CMD_LINE_ARGS}"
         ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X' : ''}"
     }
     options {
@@ -181,7 +183,7 @@ pipeline {
 // a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
                             sh "cp -r ${MAVEN_WORKSPACE}/target target"
                             sh "cd target && mkdir dependency && cd dependency && find ${WORKSPACE}/target -type f -name '*.jar' -exec jar -xf {} ';'"
-                            def customArgs = "--build-arg SERVER_PORT=${params.SERVER_PORT} --build-arg JAVA_OPTS=${params.JAVA_OPTS} --build-arg MAIN_CLASS=${params.MAIN_CLASS}"
+                            def customArgs = "--build-arg APP_PORT=${params.APP_PORT} --build-arg JAVA_OPTS=${params.JAVA_OPTS} --build-arg MAIN_CLASS=${params.MAIN_CLASS}"
                             def additionalBuildArgs = "--pull ${customArgs}"
                             docker.build("${IMAGE_NAME}", "${additionalBuildArgs} .")
                         }
@@ -192,8 +194,8 @@ pipeline {
                         echo '- - - - - - - RUN IMAGE - - - - - - -'
                         script{
                             def RUN_ARGS = '-v /home/.m2:/root/.m2'
-                            if(params.SERVER_PORT != null && params.SERVER_PORT != '') {
-                                RUN_ARGS = "${RUN_ARGS} -p ${params.SERVER_PORT}:${params.SERVER_PORT}"
+                            if(params.APP_PORT != null && params.APP_PORT != '') {
+                                RUN_ARGS = "${RUN_ARGS} -p ${params.APP_PORT}:${params.APP_PORT}"
                             }
                             if(params.JAVA_OPTS != null && params.JAVA_OPTS != '') {
                                 RUN_ARGS = "${RUN_ARGS} -e JAVA_OPTS=${JAVA_OPTS}"

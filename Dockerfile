@@ -2,8 +2,8 @@
 # ----------------------------------------
 FROM openjdk:8-jdk-alpine
 VOLUME /tmp
-ARG SERVER_PORT
-RUN test -z "${SERVER_PORT}" || EXPOSE "${SERVER_PORT}" && :
+ARG APP_PORT
+RUN test -z "${APP_PORT}" || EXPOSE "${APP_PORT}" && :
 ARG DEPENDENCY_DIR=target/dependency
 # Uncomment for Spring Boot
 # COPY ${DEPENDENCY_DIR}/BOOT-INF/lib /app/lib
