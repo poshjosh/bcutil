@@ -96,6 +96,9 @@ pipeline {
                         echo '- - - - - - - UNIT TESTS - - - - - - -'
                         sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} resources:testResources compiler:testCompile surefire:test'
                         jacoco execPattern: 'target/jacoco.exec'
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            sh "exit 1"
+                        }
                     }
                     post {
                         always {
