@@ -14,10 +14,10 @@ pipeline {
                 description: 'Name of the organization. (Docker Hub/GitHub)')
         string(name: 'APP_BASE_URL', defaultValue: 'http://localhost',
                 description: 'Server protocol://host, without the port')
-        string(name: 'APP_PORT', defaultValue: '', description: 'Server port')
+        string(name: 'APP_PORT', defaultValue: '', description: 'App server port')
         string(name: 'APP_CONTEXT', defaultValue: '/',
-                description: 'Server context path. Must begin with a forward slash / ')
-// @issue #001
+                description: 'App server context path. Must begin with a forward slash / ')
+// @bug @issue #001
 // Only one java option supported. (e.g '-XX:+TieredCompilation')
 // When more than one specified, encountered error: unknown shorthand flag: 'X' in -XX:TieredStopAtLevel=1
 // --build-arg 'JAVA_OPTS=-XX:+TieredCompilation' '-XX:TieredStopAtLevel=1' -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap
@@ -211,17 +211,10 @@ pipeline {
                             if(params.JAVA_OPTS != null && params.JAVA_OPTS != '') {
                                 RUN_ARGS = "${RUN_ARGS} -e JAVA_OPTS=${JAVA_OPTS}"
                             }
-//                            try {
-//                                sh "docker run ${RUN_ARGS} ${IMAGE_NAME} ${CMD_LINE_ARGS}"
-// SERVER_URL is an environment variable not a pipeline parameter
-//                                sh "curl --retry 5 --retry-connrefused --connect-timeout 5 --max-time 5 ${SERVER_URL}"
-//                            }finally{
-//                                sh "docker stop ${IMAGE_NAME}"
-//                            }
                             docker.image("${IMAGE_NAME}")
                                 .withRun("${RUN_ARGS}", "${CMD_LINE_ARGS}") {
 // SERVER_URL is an environment variable not a pipeline parameter
-                                    if(SERVER_URL != null && SERVER_URL != '') {
+                                    if(APP_HAS_SERVER) {
                                         sh "curl --retry 5 --retry-connrefused --connect-timeout 5 --max-time 5 ${SERVER_URL}"
                                     }else {
                                         echo "No Server URL"
