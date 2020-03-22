@@ -40,7 +40,7 @@ pipeline {
         IMAGE_NAME = IMAGE_REF.toLowerCase()
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_WORKSPACE = ''
-        APP_HAS_SERVER = "${params.SERVER_PORT != null && params.SERVER_PORT != ''"
+        APP_HAS_SERVER = "${params.SERVER_PORT != null && params.SERVER_PORT != ''}"
         SERVER_URL = "${APP_HAS_SERVER ? params.SERVER_BASE_URL':'params.SERVER_PORT''params.SERVER_CONTEXT : null}"
 // Add server port to command line args
         CMD_LINE_ARGS = "${APP_HAS_SERVER ? CMD_LINE_ARGS' --server-port='params.SERVER_PORT : CMD_LINE_ARGS}"
