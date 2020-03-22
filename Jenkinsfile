@@ -50,9 +50,9 @@ pipeline {
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_WORKSPACE = ''
         APP_HAS_SERVER = "${params.APP_PORT != null && params.APP_PORT != ''}"
-        SERVER_URL = "${APP_HAS_SERVER ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : null}"
+        SERVER_URL = "${APP_HAS_SERVER == true ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : null}"
 // Add server port to command line args
-        CMD_LINE_ARGS = "${APP_HAS_SERVER ? CMD_LINE_ARGS + ' --server-port=' + params.APP_PORT : CMD_LINE_ARGS}"
+        CMD_LINE_ARGS = "${APP_HAS_SERVER == true ? CMD_LINE_ARGS + ' --server-port=' + params.APP_PORT : CMD_LINE_ARGS}"
         ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X' : ''}"
     }
     options {
@@ -214,7 +214,7 @@ pipeline {
                             docker.image("${IMAGE_NAME}")
                                 .withRun("${RUN_ARGS}", "${CMD_LINE_ARGS}") {
 // SERVER_URL is an environment variable not a pipeline parameter
-                                    if(APP_HAS_SERVER) {
+                                    if(APP_HAS_SERVER == true) {
                                         sh "curl --retry 5 --retry-connrefused --connect-timeout 5 --max-time 5 ${SERVER_URL}"
                                     }else {
                                         echo "No Server URL"
