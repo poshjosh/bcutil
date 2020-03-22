@@ -10,15 +10,15 @@ pipeline {
      * some of the valid parameter types are booleanParam, choice, file, text, password, run, or string
      */
     parameters {
-        string(name: 'ORG_NAME', defaultValue: "poshjosh",
+        string(name: 'ORG_NAME', defaultValue: 'poshjosh',
                 description: 'Name of the organization. (Docker Hub/GitHub)')
-        string(name: 'APP_BASE_URL', defaultValue: "http://localhost",
+        string(name: 'APP_BASE_URL', defaultValue: 'http://localhost',
                 description: 'Server protocol://host, without the port')
         string(name: 'APP_PORT', defaultValue: '', description: 'Server port')
-        string(name: 'APP_CONTEXT', defaultValue: "/",
+        string(name: 'APP_CONTEXT', defaultValue: '/',
                 description: 'Server context path. Must begin with a forward slash / ')
         string(name: 'JAVA_OPTS',
-                defaultValue: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap",
+                defaultValue: '-XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap',
                 description: 'Java environment variables')
         string(name: 'CMD_LINE_ARGS', defaultValue: '',
                 description: 'Command line arguments')
