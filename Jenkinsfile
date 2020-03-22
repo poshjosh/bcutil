@@ -8,8 +8,19 @@ pipeline {
     agent any
 
     /**
-     * parameters directive provides a list of parameters which a user should provide when triggering the Pipeline
-     * some of the valid parameter types are booleanParam, choice, file, text, password, run, or string
+     * parameters directive provides a list of parameters which a user should
+     * provide when triggering the Pipeline some of the valid parameter types
+     * are booleanParam, choice, file, text, password, run, or string.
+     * @bug @issue #001
+     * Only one java option supported. (e.g '-XX:+TieredCompilation')
+     * When more than one specified, encountered error:
+     * <code>
+     * unknown shorthand flag: 'X' in -XX:TieredStopAtLevel=1
+     * --build-arg 'JAVA_OPTS=-XX:+TieredCompilation' '-XX:TieredStopAtLevel=1'
+     * -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap
+     * </code>
+     * From the above the multiplie java opts where separated by jenkins
+     * Tried using single, double and then triple quotes, the error still occurred
      */
     parameters {
         string(name: 'ORG_NAME', defaultValue: 'poshjosh',
@@ -19,15 +30,6 @@ pipeline {
         string(name: 'APP_PORT', defaultValue: '', description: 'App server port')
         string(name: 'APP_CONTEXT', defaultValue: '/',
                 description: 'App server context path. Must begin with a forward slash / ')
-// @bug @issue #001
-// Only one java option supported. (e.g '-XX:+TieredCompilation')
-// When more than one specified, encountered error: unknown shorthand flag: 'X' in -XX:TieredStopAtLevel=1
-// --build-arg 'JAVA_OPTS=-XX:+TieredCompilation' '-XX:TieredStopAtLevel=1' -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap
-// From the above the multiplie java opts where separated by jenkins
-// I tried using single, double and then tripple quotes, but the error still occurred
-//        string(name: 'JAVA_OPTS',
-//                defaultValue: '-XX:TieredStopAtLevel=1 -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap',
-//                description: 'Java environment variables')
         string(name: 'JAVA_OPTS',
                 defaultValue: '-XX:TieredStopAtLevel=1',
                 description: 'Java environment variables')
@@ -36,7 +38,7 @@ pipeline {
         string(name: 'MAIN_CLASS', defaultValue: 'com.bc.util.Main',
                 description: 'Java main class')
         string(name: 'SONAR_BASE_URL', defaultValue: 'http://localhost',
-                description: 'Sonarqube base URL. Will be combined with port to build Sonarqube property sonar.host.url')
+                description: '<base_url>:<port> = sonar.host.url')
         string(name: 'SONAR_PORT', defaultValue: '9000',
                 description: 'Port for Sonarqube server')
         string(name: 'TIMEOUT', defaultValue: '45',
@@ -52,7 +54,8 @@ pipeline {
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_WORKSPACE = ''
         APP_HAS_SERVER = "${params.APP_PORT != null && params.APP_PORT != ''}"
-        SERVER_URL = "${APP_HAS_SERVER == true ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : null}"
+        SERVER_URL = "${APP_HAS_SERVER == true ? params.APP_BASE_URL + ':' +
+            params.APP_PORT + params.APP_CONTEXT : null}"
         ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X -T 1C' : '-T 1C'}"
         VOLUME_BINDINGS = '-v /home/.m2:/root/.m2'
     }
@@ -77,9 +80,9 @@ pipeline {
                 }
             }
             stages {
-                stage('Clean & Build') {
+                stage('Test & Package') {
                     steps {
-                        echo '- - - - - - - CLEAN & BUILD - - - - - - -'
+                        echo '- - - - - - - TEST & PACKAGE - - - - - - -'
                         script {
                             MAVEN_WORKSPACE = WORKSPACE
                             if(DEBUG == 'Y') {
@@ -88,13 +91,7 @@ pipeline {
                                 echo '- - - - - - - Done Printing Environment - - - - - - -'
                             }
                         }
-                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} clean:clean resources:resources compiler:compile'
-                    }
-                }
-                stage('Unit Tests') {
-                    steps {
-                        echo '- - - - - - - UNIT TESTS - - - - - - -'
-                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} resources:testResources compiler:testCompile surefire:test'
+                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} clean package'
                         jacoco execPattern: 'target/jacoco.exec'
                         catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                             sh "exit 1"
@@ -102,21 +99,11 @@ pipeline {
                     }
                     post {
                         always {
+                            archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
                             junit(
                                 allowEmptyResults: true,
                                 testResults: 'target/surefire-reports/*.xml'
                             )
-                        }
-                    }
-                }
-                stage('Package') {
-                    steps {
-                        echo '- - - - - - - PACKAGE - - - - - - -'
-                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} jar:jar'
-                    }
-                    post {
-                        always {
-                            archiveArtifacts artifacts: 'target/*.jar', onlyIfSuccessful: true
                         }
                     }
                 }
