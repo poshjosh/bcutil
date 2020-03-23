@@ -6,13 +6,13 @@
         <artifactId>parent</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
-    
+
     <artifactId>bcutil</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>${project.artifactId}</name>
     <description>Utility classes used by some projects in the 'com.loosesboxes' group </description>
-    
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -46,7 +46,7 @@
                 <directory>src/test/resources</directory>
                 <filtering>true</filtering>
             </resource>
-        </resources>        
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -54,7 +54,7 @@
                 <version>${maven.failsafle.plugin.version}</version>
                 <configuration>
                     <skip>${it.skip}</skip>
-                </configuration>                
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -70,6 +70,8 @@
                 <version>${maven.surefire.plugin.version}</version>
                 <configuration>
                     <skipTests>false</skipTests>
+                    <forkCount>0</forkCount>
+                    <useSystemClassLoader>false</useSystemClassLoader>
                 </configuration>
             </plugin>
             <plugin>
@@ -179,7 +181,7 @@
                                 </goals>
                             </execution>
                         </executions>
-                    </plugin>                    
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -194,7 +196,7 @@
             </activation>
             <build>
                 <plugins>
-<!-- maven-dependency-plugin and exec-maven-plugin are used to build docker image -->            
+<!-- maven-dependency-plugin and exec-maven-plugin are used to build docker image -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-dependency-plugin</artifactId>
@@ -219,7 +221,7 @@
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>        
+                    </plugin>
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
@@ -246,7 +248,7 @@
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>            
+                    </plugin>
                 </plugins>
             </build>
         </profile>
