@@ -55,7 +55,9 @@ pipeline {
         MAVEN_WORKSPACE = ''
         APP_HAS_SERVER = "${params.APP_PORT != null && params.APP_PORT != ''}"
         SERVER_URL = "${APP_HAS_SERVER == true ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : null}"
-        ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X -T 1C' : '-T 1C'}"
+// -T 1C caused error?
+//        ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X -T 1C' : '-T 1C'}"
+        ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X' : ''}"
         VOLUME_BINDINGS = '-v /home/.m2:/root/.m2'
     }
     options {
