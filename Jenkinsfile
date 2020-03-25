@@ -25,6 +25,8 @@ pipeline {
     parameters {
         string(name: 'ORG_NAME', defaultValue: 'poshjosh',
                 description: 'Name of the organization. (Docker Hub/GitHub)')
+        string(name: 'MAVEN_ARGS', defaultValue: '-B',
+                description: 'Maven arguments')
         string(name: 'APP_BASE_URL', defaultValue: 'http://localhost',
                 description: 'Server protocol://host, without the port')
         string(name: 'APP_PORT', defaultValue: '', description: 'App server port')
@@ -51,13 +53,11 @@ pipeline {
         APP_ID = "${ARTIFACTID}:${VERSION}"
         IMAGE_REF = "${ORG_NAME}/${APP_ID}"
         IMAGE_NAME = IMAGE_REF.toLowerCase()
-        MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_WORKSPACE = ''
+        MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
+        MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X ' + params.MAVEN_ARGS : params.MAVEN_ARGS}"
         APP_HAS_SERVER = "${params.APP_PORT != null && params.APP_PORT != ''}"
         SERVER_URL = "${APP_HAS_SERVER == true ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : null}"
-// -T 1C caused error?
-//        ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X -T 1C' : '-T 1C'}"
-        ADDITIONAL_MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X' : ''}"
         VOLUME_BINDINGS = '-v /home/.m2:/root/.m2'
     }
     options {
@@ -92,7 +92,7 @@ pipeline {
                                 echo '- - - - - - - Done Printing Environment - - - - - - -'
                             }
                         }
-                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} clean package'
+                        sh 'mvn ${MAVEN_ARGS} clean package'
                         jacoco execPattern: 'target/jacoco.exec'
                     }
                     post {
@@ -110,7 +110,7 @@ pipeline {
                         stage('Integration Tests') {
                             steps {
                                 echo '- - - - - - - INTEGRATION TESTS - - - - - - -'
-//                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} failsafe:integration-test failsafe:verify'
+//                                sh 'mvn ${MAVEN_ARGS} failsafe:integration-test failsafe:verify'
 //                                jacoco execPattern: 'target/jacoco-it.exec'
                             }
                             post {
@@ -125,7 +125,9 @@ pipeline {
                         stage('Sanity Check') {
                             steps {
                                 echo '- - - - - - - SANITY CHECK - - - - - - -'
-                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
+// SpotBugs causing org.xml.sax.SAXParseException                                
+//                                sh 'mvn ${MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
+                                sh 'mvn ${MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd'
                             }
                         }
                         stage('Sonar Scan') {
@@ -140,13 +142,13 @@ pipeline {
                             }
                             steps {
                                 echo '- - - - - - - SONAR SCAN - - - - - - -'
-                                sh "mvn -B ${ADDITIONAL_MAVEN_ARGS} sonar:sonar -Dsonar.login=$SONAR_USR -Dsonar.password=$SONAR_PSW -Dsonar.host.url=${SONAR_URL}"
+                                sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=$SONAR_USR -Dsonar.password=$SONAR_PSW -Dsonar.host.url=${SONAR_URL}"
                             }
                         }
                         stage('Documentation') {
                             steps {
                                 echo '- - - - - - - DOCUMENTATION - - - - - - -'
-                                sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} site:site'
+                                sh 'mvn ${MAVEN_ARGS} site:site'
                             }
                             post {
                                 always {
@@ -159,7 +161,7 @@ pipeline {
                 stage('Install Local') {
                     steps {
                         echo '- - - - - - - INSTALL LOCAL - - - - - - -'
-                        sh 'mvn -B ${ADDITIONAL_MAVEN_ARGS} source:jar install:install'
+                        sh 'mvn ${MAVEN_ARGS} source:jar install:install'
                     }
                 }
             }
