@@ -2,6 +2,7 @@
 /**
  * https://github.com/poshjosh/bcutil
  * At a minimum, provide the MAIN_CLASS and where applicable APP_PORT and SONAR_PORT
+ * You may also need to specify SONAR_BASE_URL if not <tt>localhost</tt>
  */
 pipeline {
 
@@ -112,8 +113,8 @@ pipeline {
                         stage('Integration Tests') {
                             steps {
                                 echo '- - - - - - - INTEGRATION TESTS - - - - - - -'
-//                                sh 'mvn ${MAVEN_ARGS} failsafe:integration-test failsafe:verify'
-//                                jacoco execPattern: 'target/jacoco-it.exec'
+                                sh 'mvn ${MAVEN_ARGS} failsafe:integration-test failsafe:verify'
+                                jacoco execPattern: 'target/jacoco-it.exec'
                             }
                             post {
                                 always {
@@ -144,12 +145,9 @@ pipeline {
                             }
                             steps {
                                 echo '- - - - - - - SONAR SCAN - - - - - - -'
-                                // Fail the stage, but continue pipeline as success 
-//                                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-                                    script{
-                                        sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${env.SONAR_URL}"
-                                    }
-//                                }
+                                script{
+                                    sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${env.SONAR_URL}"
+                                }
                             }
                         }
                         stage('Documentation') {
@@ -183,13 +181,19 @@ pipeline {
                 stage('Build Image') {
                     steps {
                         echo '- - - - - - - BUILD IMAGE - - - - - - -'
-                        echo "MAVEN_WORKSPACE = ${MAVEN_WORKSPACE}"
                         script {
                             // a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
+                            
+                            echo "Copying workspace containing maven artifact: ${MAVEN_WORKSPACE}/target"
                             sh "cp -r ${MAVEN_WORKSPACE}/target target"
+
+                            echo "Copying dependencies"
                             sh "cd target && mkdir dependency && cd dependency && find ${WORKSPACE}/target -type f -name '*.jar' -exec jar -xf {} ';'"
+
                             def customArgs = "--build-arg APP_PORT=${params.APP_PORT} --build-arg MAIN_CLASS=${params.MAIN_CLASS} --build-arg JAVA_OPTS=${params.JAVA_OPTS}"
                             def additionalBuildArgs = "--pull ${customArgs}"
+
+                            echo "Building image: ${IMAGE_NAME}"
                             docker.build("${IMAGE_NAME}", "${additionalBuildArgs} .")
                         }
                     }
