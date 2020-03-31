@@ -45,6 +45,8 @@ pipeline {
                 description: 'Port for Sonarqube server')
         string(name: 'TIMEOUT', defaultValue: '45',
                 description: 'Max time that could be spent in MINUTES')
+        string(name: 'FAILURE_EMAIL_RECIPIENT', defaultValue: '',
+                description: 'The email address to send a message to on failure')
         choice(name: 'DEBUG', choices: ['Y', 'N'], description: 'Debug?')
     }
     environment {
@@ -229,7 +231,6 @@ pipeline {
                 }
                 stage('Deploy Image') {
                     when {
-                        beforeAgent true
                         branch '*/master'
                     }
                     steps {
@@ -263,11 +264,15 @@ pipeline {
             sh "docker system prune -f --volumes"
         }
         failure {
-            mail(
-                to: 'posh.bc@gmail.com',
-                subject: "$IMAGE_NAME - Build # $BUILD_NUMBER - FAILED!",
-                body: "$IMAGE_NAME - Build # $BUILD_NUMBER - FAILED:\n\nCheck console output at ${env.BUILD_URL} to view the results."
-            )
+            script{
+                if(FAILURE_EMAIL_RECIPIENT != null && FAILURE_EMAIL_RECIPIENT != '') {
+                    mail(
+                        to: "${FAILURE_EMAIL_RECIPIENT}",
+                        subject: "$IMAGE_NAME - Build # $BUILD_NUMBER - FAILED!",
+                        body: "$IMAGE_NAME - Build # $BUILD_NUMBER - FAILED:\n\nCheck console output at ${env.BUILD_URL} to view the results."
+                    )
+                }
+            }
         }
     }
 }
