@@ -196,6 +196,7 @@ pipeline {
                 stage('Build Image') {
                     steps {
                         echo '- - - - - - - BUILD IMAGE - - - - - - -'
+                        echo "MAVEN_WORKSPACE = ${MAVEN_WORKSPACE}"
                         script {
                             // a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
                             sh "cp -r ${MAVEN_WORKSPACE}/target target"
