@@ -129,7 +129,10 @@ pipeline {
                         stage('Sanity Check') {
                             steps {
                                 echo '- - - - - - - SANITY CHECK - - - - - - -'
-                                sh 'mvn ${MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
+                                // Fail the stage, but continue pipeline as success 
+                                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                    sh 'mvn ${MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
+                                }
                             }
                         }
                         stage('Sonar Scan') {
@@ -143,16 +146,19 @@ pipeline {
                             }
                             steps {
                                 echo '- - - - - - - SONAR SCAN - - - - - - -'
-                                script{
-                                    echo "SONAR_URL == null && SONAR_URL == '' -> ${SONAR_URL == null && SONAR_URL == ''}"
-                                    echo "SONAR_URL != null && SONAR_URL != '' -> ${SONAR_URL != null && SONAR_URL != ''}"
-                                    echo "SONAR_URL == null || SONAR_URL == '' -> ${SONAR_URL == null || SONAR_URL == ''}"
-                                    echo "SONAR_URL != null || SONAR_URL != '' -> ${SONAR_URL != null || SONAR_URL != ''}"
-                                    if(SONAR_URL == null || SONAR_URL == '') {
-                                        echo "... ... ... Scanning via sonar url = ${env.SONAR_URL}"
-                                        sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${SONAR_URL}"
-                                    }else{
-                                        echo 'Sonar scan will not be carried out, as sonarqube server URL was not specified. '
+                                // Fail the stage, but continue pipeline as success 
+                                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                    script{
+                                        echo "SONAR_URL == null && SONAR_URL == '' -> ${SONAR_URL == null && SONAR_URL == ''}"
+                                        echo "SONAR_URL != null && SONAR_URL != '' -> ${SONAR_URL != null && SONAR_URL != ''}"
+                                        echo "SONAR_URL == null || SONAR_URL == '' -> ${SONAR_URL == null || SONAR_URL == ''}"
+                                        echo "SONAR_URL != null || SONAR_URL != '' -> ${SONAR_URL != null || SONAR_URL != ''}"
+                                        if(SONAR_URL == null || SONAR_URL == '') {
+                                            echo "... ... ... Scanning via sonar url = ${env.SONAR_URL}"
+                                            sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${SONAR_URL}"
+                                        }else{
+                                            echo 'Sonar scan will not be carried out, as sonarqube server URL was not specified. '
+                                        }
                                     }
                                 }
                             }
