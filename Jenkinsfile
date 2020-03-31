@@ -59,9 +59,9 @@ pipeline {
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X ' + params.MAVEN_ARGS : params.MAVEN_ARGS}"
         APP_HAS_SERVER = "${!params.APP_PORT.isEmpty()}"
-        SERVER_URL = "${APP_HAS_SERVER ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : ''}"
+        SERVER_URL = "${APP_HAS_SERVER == true ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : ''}"
         APP_HAS_SONAR = "${!params.SONAR_PORT.isEmpty()}"
-        SONAR_URL = "${APP_HAS_SONAR ? params.SONAR_BASE_URL + ':' + params.SONAR_PORT : ''}"
+        SONAR_URL = "${APP_HAS_SONAR == true ? params.SONAR_BASE_URL + ':' + params.SONAR_PORT : ''}"
         VOLUME_BINDINGS = '-v /home/.m2:/root/.m2'
     }
     options {
@@ -149,6 +149,7 @@ pipeline {
                                 // Fail the stage, but continue pipeline as success 
                                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                     script{
+                                        sh 'printenv'
                                         echo "SONAR_URL -> ${SONAR_URL}"
                                         echo "env.SONAR_URL -> ${env.SONAR_URL}"
                                         echo "SONAR_URL == null -> ${SONAR_URL == null}"
