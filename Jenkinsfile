@@ -59,10 +59,11 @@ pipeline {
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X ' + params.MAVEN_ARGS : params.MAVEN_ARGS}"
         APP_HAS_SERVER = "${!params.APP_PORT.isEmpty()}"
-        APP_HAS_NO_SERVER = "${params.APP_PORT.isEmpty()}"
         SERVER_URL = "${APP_HAS_SERVER ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : ''}"
+        VAR_A_0 = "${APP_HAS_SERVER ? 'Y' : 'N'}"
+        VAR_A_1 = "${APP_HAS_SERVER == true ? 'Y' : 'N'}"
+        VAR_A_2 = "${APP_HAS_SERVER == 'true' ? 'Y' : 'N'}"
         APP_HAS_SONAR = "${!params.SONAR_PORT.isEmpty()}"
-        APP_HAS_NO_SONAR = "${params.SONAR_PORT.isEmpty()}"
         SONAR_URL = "${APP_HAS_SONAR ? params.SONAR_BASE_URL + ':' + params.SONAR_PORT : ''}"
         VOLUME_BINDINGS = '-v /home/.m2:/root/.m2'
     }
