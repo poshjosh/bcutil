@@ -149,6 +149,8 @@ pipeline {
                                 // Fail the stage, but continue pipeline as success 
                                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                     script{
+                                        echo "SONAR_URL -> ${SONAR_URL}"
+                                        echo "env.SONAR_URL -> ${env.SONAR_URL}"
                                         echo "SONAR_URL == null -> ${SONAR_URL == null}"
                                         echo "env.SONAR_URL == null -> ${env.SONAR_URL == null}"
                                         echo "SONAR_URL == '' -> ${SONAR_URL == ''}"
