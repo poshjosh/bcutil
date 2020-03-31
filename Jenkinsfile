@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /**
  * https://github.com/poshjosh/bcutil
- * At a minimum, provide the MAIN_CLASS and where applicable APP_PORT and SONAR_PORT
+ * At a minimum, provide the MAIN_CLASS and where applicable APP_PORT 
  * You may also need to specify SONAR_BASE_URL if not <tt>localhost</tt>
  */
 pipeline {
@@ -59,8 +59,8 @@ pipeline {
         MAVEN_WORKSPACE = ''
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X ' + params.MAVEN_ARGS : params.MAVEN_ARGS}"
-        SERVER_URL = "${params.APP_PORT ? (params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT) : ''}"
-        SONAR_URL = "${params.SONAR_PORT ? (params.SONAR_BASE_URL + ':' + params.SONAR_PORT) : ''}"
+        SERVER_URL = "${(params.APP_BASE_URL && params.APP_PORT) ? (params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT) : ''}"
+        SONAR_URL = "${(params.SONAR_BASE_URL && params.SONAR_PORT) ? (params.SONAR_BASE_URL + ':' + params.SONAR_PORT) : ''}"
         VOLUME_BINDINGS = '-v /home/.m2:/root/.m2'
     }
     options {
