@@ -59,6 +59,8 @@ pipeline {
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X ' + params.MAVEN_ARGS : params.MAVEN_ARGS}"
         APP_HAS_SERVER = "${!params.APP_PORT.isEmpty()}"
+        VAR_A = "${APP_HAS_SERVER ? 'Y' : 'N'}"
+        VAR_B = "${APP_HAS_SERVER == true ? 'Y' : 'N'}"
         SERVER_URL = "${APP_HAS_SERVER == true ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : ''}"
         APP_HAS_SONAR = "${!params.SONAR_PORT.isEmpty()}"
         SONAR_URL = "${APP_HAS_SONAR == true ? params.SONAR_BASE_URL + ':' + params.SONAR_PORT : ''}"
@@ -136,11 +138,11 @@ pipeline {
                             }
                         }
                         stage('Sonar Scan') {
-                            when {
-                                expression {
-                                    return (env.SONAR_URL != null && env.SONAR_URL != '')
-                                }
-                            }
+//                            when {
+//                                expression {
+//                                    return (env.SONAR_URL != null && env.SONAR_URL != '')
+//                                }
+//                            }
                             environment {
                                 SONAR = credentials('sonar-creds') // Must have been specified in Jenkins
                             }
