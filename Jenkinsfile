@@ -58,6 +58,8 @@ pipeline {
         MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X ' + params.MAVEN_ARGS : params.MAVEN_ARGS}"
         APP_HAS_SERVER = "${params.APP_PORT != null && params.APP_PORT != ''}"
         SERVER_URL = "${APP_HAS_SERVER == true ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : null}"
+        APP_HAS_SONAR = "${params.SONAR_PORT != null && params.SONAR_PORT != ''}"
+        SONAR_URL = "${APP_HAS_SONAR == true ? params.SONAR_BASE_URL + ':' + params.SONAR_PORT : null}"
         VOLUME_BINDINGS = '-v /home/.m2:/root/.m2'
     }
     options {
@@ -133,17 +135,15 @@ pipeline {
                         stage('Sonar Scan') {
                             when {
                                 expression {
-                                    params.SONAR_PORT != null && params.SONAR_PORT != ''
+                                    SONAR_URL != null && SONAR_URL != ''
                                 }
                             }
                             environment {
                                 SONAR = credentials('sonar-creds') // Must have been specified in Jenkins
-                                SONAR_URL = "${params.SONAR_BASE_URL}:${params.SONAR_PORT}"
                             }
                             steps {
                                 echo '- - - - - - - SONAR SCAN - - - - - - -'
-                                echo "-Dsonar.login=${SONAR_USR} -Dsonar.host.url=${SONAR_URL}" 
-//                                sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${SONAR_URL}"
+                                sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${SONAR_URL}"
                             }
                         }
                         stage('Documentation') {
