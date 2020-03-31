@@ -130,14 +130,14 @@ pipeline {
                             steps {
                                 echo '- - - - - - - SANITY CHECK - - - - - - -'
 // SpotBugs causing org.xml.sax.SAXParseException                                
-//                                sh 'mvn ${MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
-                                sh 'mvn ${MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd'
+                                sh 'mvn ${MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
+//                                sh 'mvn ${MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd'
                             }
                         }
                         stage('Sonar Scan') {
                             when {
                                 expression {
-                                    return (env.SONAR_URL != null)
+                                    return (SONAR_URL != null && SONAR_URL != '')
                                 }
                             }
                             environment {
@@ -146,7 +146,7 @@ pipeline {
                             steps {
                                 echo '- - - - - - - SONAR SCAN - - - - - - -'
                                 script{
-                                    if(env.SONAR_URL != null && env.SONAR_URL != '') {
+                                    if(SONAR_URL != null && SONAR_URL != '') {
                                         echo "... ... ... Scanning via sonar url = ${env.SONAR_URL}"
                                         sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${SONAR_URL}"
                                     }else{
