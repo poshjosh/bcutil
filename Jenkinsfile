@@ -112,8 +112,8 @@ pipeline {
                         stage('Integration Tests') {
                             steps {
                                 echo '- - - - - - - INTEGRATION TESTS - - - - - - -'
-                                sh 'mvn ${MAVEN_ARGS} failsafe:integration-test failsafe:verify'
-                                jacoco execPattern: 'target/jacoco-it.exec'
+//                                sh 'mvn ${MAVEN_ARGS} failsafe:integration-test failsafe:verify'
+//                                jacoco execPattern: 'target/jacoco-it.exec'
                             }
                             post {
                                 always {
