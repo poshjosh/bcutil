@@ -58,8 +58,8 @@ pipeline {
         MAVEN_WORKSPACE = ''
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X ' + params.MAVEN_ARGS : params.MAVEN_ARGS}"
-        SERVER_URL = "${params.APP_PORT.isEmpty() ? '' : (params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT)}"
-        SONAR_URL = "${params.SONAR_PORT.isEmpty() ? '' : (params.SONAR_BASE_URL + ':' + params.SONAR_PORT)}"
+        SERVER_URL = "${(params.APP_PORT == null || params.APP_PORT.isEmpty()) ? '' : (params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT)}"
+        SONAR_URL = "${(params.SONAR_PORT == null || params.SONAR_PORT.isEmpty()) ? '' : (params.SONAR_BASE_URL + ':' + params.SONAR_PORT)}"
         VOLUME_BINDINGS = '-v /home/.m2:/root/.m2'
     }
     options {
