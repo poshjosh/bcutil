@@ -138,7 +138,7 @@ pipeline {
                         stage('Sonar Scan') {
                             when {
                                 expression{
-                                    return env.SONAR_URL != null && env.SONAR_URL != ''
+                                    return (env.SONAR_URL != null && env.SONAR_URL != '')
                                 }
                             }
                             environment {
