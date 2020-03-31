@@ -134,35 +134,22 @@ pipeline {
                             }
                         }
                         stage('Sonar Scan') {
-//                            when {
-//                                expression {
-//                                    return (env.SONAR_URL != null && env.SONAR_URL != '')
-//                                }
-//                            }
+                            when {
+                                expression {
+                                    return (env.SONAR_URL != null && env.SONAR_URL != '')
+                                }
+                            }
                             environment {
                                 SONAR = credentials('sonar-creds') // Must have been specified in Jenkins
                             }
                             steps {
                                 echo '- - - - - - - SONAR SCAN - - - - - - -'
                                 // Fail the stage, but continue pipeline as success 
-                                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+//                                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                     script{
-                                        sh 'printenv'
-                                        echo "env.SONAR_URL -> ${env.SONAR_URL}"
-                                        echo "env.SONAR_URL == null -> ${env.SONAR_URL == null}"
-                                        echo "env.SONAR_URL == '' -> ${env.SONAR_URL == ''}"
-                                        echo "env.SONAR_URL.isEmpty() -> ${env.SONAR_URL.isEmpty()}"
-                                        echo "env.SONAR_URL == null && env.SONAR_URL == '' -> ${env.SONAR_URL == null && env.SONAR_URL == ''}"
-                                        echo "env.SONAR_URL != null && env.SONAR_URL != '' -> ${env.SONAR_URL != null && env.SONAR_URL != ''}"
-                                        echo "env.SONAR_URL == null || env.SONAR_URL == '' -> ${env.SONAR_URL == null || env.SONAR_URL == ''}"
-                                        echo "env.SONAR_URL != null || env.SONAR_URL != '' -> ${env.SONAR_URL != null || env.SONAR_URL != ''}"
-                                        if(env.SONAR_URL == null || env.SONAR_URL == '') {
-                                            sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${env.SONAR_URL}"
-                                        }else{
-                                            echo 'Sonar scan will not be carried out, as sonarqube server URL was not specified. '
-                                        }
+                                        sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${env.SONAR_URL}"
                                     }
-                                }
+//                                }
                             }
                         }
                         stage('Documentation') {
