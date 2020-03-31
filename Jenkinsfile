@@ -136,17 +136,18 @@ pipeline {
                             }
                         }
                         stage('Sonar Scan') {
-                            when {
-                                expression {
-                                    return SONAR_URL != null && SONAR_URL != ''
-                                }
-                            }
                             environment {
                                 SONAR = credentials('sonar-creds') // Must have been specified in Jenkins
                             }
                             steps {
                                 echo '- - - - - - - SONAR SCAN - - - - - - -'
-                                sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${SONAR_URL}"
+                                script{
+                                    if(SONAR_URL != null && SONAR_URL != '') {
+                                        sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${SONAR_URL}"
+                                    }else{
+                                        echo 'Sonar scan will not be carried out, as sonarqube server URL was not specified. '
+                                    }
+                                }
                             }
                         }
                         stage('Documentation') {
