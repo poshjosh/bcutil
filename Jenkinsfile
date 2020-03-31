@@ -1,7 +1,7 @@
 #!/usr/bin/env groovy
 /**
  * https://github.com/poshjosh/bcutil
- * At a minimum, provide the MAIN_CLASS and where applicable SONAR_PORT and
+ * At a minimum, provide the MAIN_CLASS and where applicable APP_PORT and SONAR_PORT
  */
 pipeline {
 
@@ -41,13 +41,13 @@ pipeline {
                 description: 'Java main class')
         string(name: 'SONAR_BASE_URL', defaultValue: 'http://localhost',
                 description: '<base_url>:<port> = sonar.host.url')
-        string(name: 'SONAR_PORT', defaultValue: '9000',
+        string(name: 'SONAR_PORT', defaultValue: '',
                 description: 'Port for Sonarqube server')
-        string(name: 'TIMEOUT', defaultValue: '45',
+        string(name: 'TIMEOUT', defaultValue: '30',
                 description: 'Max time that could be spent in MINUTES')
         string(name: 'FAILURE_EMAIL_RECIPIENT', defaultValue: '',
                 description: 'The email address to send a message to on failure')
-        choice(name: 'DEBUG', choices: ['Y', 'N'], description: 'Debug?')
+        choice(name: 'DEBUG', choices: ['N', 'Y'], description: 'Debug?')
     }
     environment {
         ARTIFACTID = readMavenPom().getArtifactId()
