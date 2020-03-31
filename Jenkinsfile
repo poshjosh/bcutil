@@ -144,7 +144,11 @@ pipeline {
                             steps {
                                 echo '- - - - - - - SONAR SCAN - - - - - - -'
                                 script{
-                                    if(SONAR_URL != null && SONAR_URL != '') {
+                                    echo "SONAR_URL == null && SONAR_URL == '' -> ${SONAR_URL == null && SONAR_URL == ''}"
+                                    echo "SONAR_URL != null && SONAR_URL != '' -> ${SONAR_URL != null && SONAR_URL != ''}"
+                                    echo "SONAR_URL == null || SONAR_URL == '' -> ${SONAR_URL == null || SONAR_URL == ''}"
+                                    echo "SONAR_URL != null || SONAR_URL != '' -> ${SONAR_URL != null || SONAR_URL != ''}"
+                                    if(SONAR_URL == null || SONAR_URL == '') {
                                         echo "... ... ... Scanning via sonar url = ${env.SONAR_URL}"
                                         sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${SONAR_URL}"
                                     }else{
