@@ -138,8 +138,7 @@ pipeline {
                         stage('Sonar Scan') {
                             when {
                                 expression {
-                                    echo "SONAR_URL = ${SONAR_URL}"
-                                    SONAR_URL != null && SONAR_URL != ''
+                                    return SONAR_URL != null && SONAR_URL != ''
                                 }
                             }
                             environment {
@@ -174,7 +173,7 @@ pipeline {
         stage('Docker') {
             when {
                 expression {
-                    params.MAIN_CLASS != null && params.MAIN_CLASS != ''
+                    return params.MAIN_CLASS != null && params.MAIN_CLASS != ''
                 }
             }
             stages{
