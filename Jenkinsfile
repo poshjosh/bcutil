@@ -129,9 +129,7 @@ pipeline {
                         stage('Sanity Check') {
                             steps {
                                 echo '- - - - - - - SANITY CHECK - - - - - - -'
-// SpotBugs causing org.xml.sax.SAXParseException                                
                                 sh 'mvn ${MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
-//                                sh 'mvn ${MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd'
                             }
                         }
                         stage('Sonar Scan') {
