@@ -134,7 +134,7 @@ pipeline {
                                 }
                             }
                         }
-                        stage('Sonar Scan') {
+                        stage('Static Code Analysis') {
                             when {
                                 expression {
                                     return (env.SONAR_URL != null && env.SONAR_URL != '')
