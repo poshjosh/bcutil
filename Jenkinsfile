@@ -88,6 +88,7 @@ pipeline {
                 stage('Test & Package') {
                     steps {
                         echo '- - - - - - - TEST & PACKAGE - - - - - - -'
+                        echo "SONAR_URL = ${SONAR_URL}"
                         script {
                             MAVEN_WORKSPACE = WORKSPACE
                             if(DEBUG == 'Y') {
@@ -137,6 +138,7 @@ pipeline {
                         stage('Sonar Scan') {
                             when {
                                 expression {
+                                    echo "SONAR_URL = ${SONAR_URL}"
                                     SONAR_URL != null && SONAR_URL != ''
                                 }
                             }
