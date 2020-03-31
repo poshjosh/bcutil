@@ -58,10 +58,8 @@ pipeline {
         MAVEN_WORKSPACE = ''
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X ' + params.MAVEN_ARGS : params.MAVEN_ARGS}"
-        APP_HAS_SERVER = "${!params.APP_PORT.isEmpty()}"
-        SERVER_URL = "${APP_HAS_SERVER === true ? (params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT) : ''}"
-        APP_HAS_SONAR = "${!params.SONAR_PORT.isEmpty()}"
-        SONAR_URL = "${APP_HAS_SONAR === true ? (params.SONAR_BASE_URL + ':' + params.SONAR_PORT) : ''}"
+        SERVER_URL = "${params.APP_PORT.isEmpty() ? '' : (params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT)}"
+        SONAR_URL = "${params.SONAR_PORT.isEmpty() ? '' : (params.SONAR_BASE_URL + ':' + params.SONAR_PORT)}"
         VOLUME_BINDINGS = '-v /home/.m2:/root/.m2'
     }
     options {
@@ -114,8 +112,8 @@ pipeline {
                         stage('Integration Tests') {
                             steps {
                                 echo '- - - - - - - INTEGRATION TESTS - - - - - - -'
-//                                sh 'mvn ${MAVEN_ARGS} failsafe:integration-test failsafe:verify'
-//                                jacoco execPattern: 'target/jacoco-it.exec'
+                                sh 'mvn ${MAVEN_ARGS} failsafe:integration-test failsafe:verify'
+                                jacoco execPattern: 'target/jacoco-it.exec'
                             }
                             post {
                                 always {
@@ -150,13 +148,9 @@ pipeline {
                                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                     script{
                                         sh 'printenv'
-//                                        echo "SONAR_URL -> ${SONAR_URL}"
                                         echo "env.SONAR_URL -> ${env.SONAR_URL}"
-//                                        echo "SONAR_URL == null -> ${SONAR_URL == null}"
                                         echo "env.SONAR_URL == null -> ${env.SONAR_URL == null}"
-//                                        echo "SONAR_URL == '' -> ${SONAR_URL == ''}"
                                         echo "env.SONAR_URL == '' -> ${env.SONAR_URL == ''}"
-//                                        echo "SONAR_URL.isEmpty() -> ${SONAR_URL.isEmpty()}"
                                         echo "env.SONAR_URL.isEmpty() -> ${env.SONAR_URL.isEmpty()}"
                                         echo "env.SONAR_URL == null && env.SONAR_URL == '' -> ${env.SONAR_URL == null && env.SONAR_URL == ''}"
                                         echo "env.SONAR_URL != null && env.SONAR_URL != '' -> ${env.SONAR_URL != null && env.SONAR_URL != ''}"
@@ -227,7 +221,7 @@ pipeline {
 
                             // Add server port to command line args
                             def CMD_LINE
-                            if(env.APP_HAS_SERVER) {
+                            if(env.SERVER_URL) {
                                 CMD_LINE = params.CMD_LINE_ARGS + ' --server-port=' + params.APP_PORT
                             }else{
                                 CMD_LINE = params.CMD_LINE_ARGS
@@ -239,7 +233,7 @@ pipeline {
                             docker.image("${IMAGE_NAME}")
                                 .withRun("${RUN_ARGS}", "${CMD_LINE}") {
                                     // SERVER_URL is an environment variable not a pipeline parameter
-                                    if(env.APP_HAS_SERVER) {
+                                    if(env.SERVER_URL) {
                                         sh "curl --retry 5 --retry-connrefused --connect-timeout 5 --max-time 5 ${SERVER_URL}"
                                     }else {
                                         echo "No Server URL"
