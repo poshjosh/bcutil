@@ -59,11 +59,9 @@ pipeline {
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X ' + params.MAVEN_ARGS : params.MAVEN_ARGS}"
         APP_HAS_SERVER = "${!params.APP_PORT.isEmpty()}"
-        VAR_A = "${APP_HAS_SERVER ? 'Y' : 'N'}"
-        VAR_B = "${APP_HAS_SERVER == true ? 'Y' : 'N'}"
-        SERVER_URL = "${APP_HAS_SERVER == true ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : ''}"
+        SERVER_URL = "${APP_HAS_SERVER ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : ''}"
         APP_HAS_SONAR = "${!params.SONAR_PORT.isEmpty()}"
-        SONAR_URL = "${APP_HAS_SONAR == true ? params.SONAR_BASE_URL + ':' + params.SONAR_PORT : ''}"
+        SONAR_URL = "${APP_HAS_SONAR ? params.SONAR_BASE_URL + ':' + params.SONAR_PORT : ''}"
         VOLUME_BINDINGS = '-v /home/.m2:/root/.m2'
     }
     options {
@@ -152,21 +150,20 @@ pipeline {
                                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                     script{
                                         sh 'printenv'
-                                        echo "SONAR_URL -> ${SONAR_URL}"
+//                                        echo "SONAR_URL -> ${SONAR_URL}"
                                         echo "env.SONAR_URL -> ${env.SONAR_URL}"
-                                        echo "SONAR_URL == null -> ${SONAR_URL == null}"
+//                                        echo "SONAR_URL == null -> ${SONAR_URL == null}"
                                         echo "env.SONAR_URL == null -> ${env.SONAR_URL == null}"
-                                        echo "SONAR_URL == '' -> ${SONAR_URL == ''}"
+//                                        echo "SONAR_URL == '' -> ${SONAR_URL == ''}"
                                         echo "env.SONAR_URL == '' -> ${env.SONAR_URL == ''}"
-                                        echo "SONAR_URL.isEmpty() -> ${SONAR_URL.isEmpty()}"
+//                                        echo "SONAR_URL.isEmpty() -> ${SONAR_URL.isEmpty()}"
                                         echo "env.SONAR_URL.isEmpty() -> ${env.SONAR_URL.isEmpty()}"
-                                        echo "SONAR_URL == null && SONAR_URL == '' -> ${SONAR_URL == null && SONAR_URL == ''}"
-                                        echo "SONAR_URL != null && SONAR_URL != '' -> ${SONAR_URL != null && SONAR_URL != ''}"
-                                        echo "SONAR_URL == null || SONAR_URL == '' -> ${SONAR_URL == null || SONAR_URL == ''}"
-                                        echo "SONAR_URL != null || SONAR_URL != '' -> ${SONAR_URL != null || SONAR_URL != ''}"
-                                        if(SONAR_URL == null || SONAR_URL == '') {
-                                            echo "... ... ... Scanning via sonar url = ${env.SONAR_URL}"
-                                            sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${SONAR_URL}"
+                                        echo "env.SONAR_URL == null && env.SONAR_URL == '' -> ${env.SONAR_URL == null && env.SONAR_URL == ''}"
+                                        echo "env.SONAR_URL != null && env.SONAR_URL != '' -> ${env.SONAR_URL != null && env.SONAR_URL != ''}"
+                                        echo "env.SONAR_URL == null || env.SONAR_URL == '' -> ${env.SONAR_URL == null || env.SONAR_URL == ''}"
+                                        echo "env.SONAR_URL != null || env.SONAR_URL != '' -> ${env.SONAR_URL != null || env.SONAR_URL != ''}"
+                                        if(env.SONAR_URL == null || env.SONAR_URL == '') {
+                                            sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${env.SONAR_URL}"
                                         }else{
                                             echo 'Sonar scan will not be carried out, as sonarqube server URL was not specified. '
                                         }
@@ -237,7 +234,7 @@ pipeline {
 
                             // Add server port to command line args
                             def CMD_LINE
-                            if(APP_HAS_SERVER == true) {
+                            if(APP_HAS_SERVER) {
                                 CMD_LINE = params.CMD_LINE_ARGS + ' --server-port=' + params.APP_PORT
                             }else{
                                 CMD_LINE = params.CMD_LINE_ARGS
@@ -246,7 +243,7 @@ pipeline {
                             docker.image("${IMAGE_NAME}")
                                 .withRun("${RUN_ARGS}", "${CMD_LINE}") {
                                     // SERVER_URL is an environment variable not a pipeline parameter
-                                    if(APP_HAS_SERVER == true) {
+                                    if(APP_HAS_SERVER) {
                                         sh "curl --retry 5 --retry-connrefused --connect-timeout 5 --max-time 5 ${SERVER_URL}"
                                     }else {
                                         echo "No Server URL"
