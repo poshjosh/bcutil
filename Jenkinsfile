@@ -136,13 +136,18 @@ pipeline {
                             }
                         }
                         stage('Sonar Scan') {
+                            when {
+                                expression{
+                                    return env.SONAR_URL != null && env.SONAR_URL != ''
+                                }
+                            }
                             environment {
                                 SONAR = credentials('sonar-creds') // Must have been specified in Jenkins
                             }
                             steps {
                                 echo '- - - - - - - SONAR SCAN - - - - - - -'
                                 script{
-                                    if(SONAR_URL != null && SONAR_URL != '') {
+                                    if(env.SONAR_URL != null && env.SONAR_URL != '') {
                                         echo "... ... ... Scanning via sonar url = ${SONAR_URL}"
                                         sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${SONAR_URL}"
                                     }else{
