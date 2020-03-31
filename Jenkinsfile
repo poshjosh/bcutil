@@ -143,6 +143,7 @@ pipeline {
                                 echo '- - - - - - - SONAR SCAN - - - - - - -'
                                 script{
                                     if(SONAR_URL != null && SONAR_URL != '') {
+                                        echo "... ... ... Scanning via sonar url = ${SONAR_URL}"
                                         sh "mvn ${MAVEN_ARGS} sonar:sonar -Dsonar.login=${SONAR_USR} -Dsonar.password=${SONAR_PSW} -Dsonar.host.url=${SONAR_URL}"
                                     }else{
                                         echo 'Sonar scan will not be carried out, as sonarqube server URL was not specified. '
