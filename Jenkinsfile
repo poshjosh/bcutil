@@ -59,12 +59,9 @@ pipeline {
         MAVEN_CONTAINER_NAME = "${ARTIFACTID}-container"
         MAVEN_ARGS = "${params.DEBUG == 'Y' ? '-X ' + params.MAVEN_ARGS : params.MAVEN_ARGS}"
         APP_HAS_SERVER = "${!params.APP_PORT.isEmpty()}"
-        SERVER_URL = "${APP_HAS_SERVER ? params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT : ''}"
-        VAR_A_0 = "${APP_HAS_SERVER ? 'Y' : 'N'}"
-        VAR_A_1 = "${APP_HAS_SERVER == true ? 'Y' : 'N'}"
-        VAR_A_2 = "${APP_HAS_SERVER == 'true' ? 'Y' : 'N'}"
+        SERVER_URL = "${APP_HAS_SERVER ? (params.APP_BASE_URL + ':' + params.APP_PORT + params.APP_CONTEXT) : ''}"
         APP_HAS_SONAR = "${!params.SONAR_PORT.isEmpty()}"
-        SONAR_URL = "${APP_HAS_SONAR ? params.SONAR_BASE_URL + ':' + params.SONAR_PORT : ''}"
+        SONAR_URL = "${APP_HAS_SONAR ? (params.SONAR_BASE_URL + ':' + params.SONAR_PORT) : ''}"
         VOLUME_BINDINGS = '-v /home/.m2:/root/.m2'
     }
     options {
@@ -132,7 +129,7 @@ pipeline {
                         stage('Sanity Check') {
                             steps {
                                 echo '- - - - - - - SANITY CHECK - - - - - - -'
-                                // Fail the stage, but continue pipeline as success 
+                                // On error, fail the stage, but continue pipeline as success 
                                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                     sh 'mvn ${MAVEN_ARGS} checkstyle:checkstyle pmd:pmd pmd:cpd com.github.spotbugs:spotbugs-maven-plugin:spotbugs'
                                 }
@@ -198,7 +195,7 @@ pipeline {
         stage('Docker') {
             when {
                 expression {
-                    return params.MAIN_CLASS != null && params.MAIN_CLASS != ''
+                    return (params.MAIN_CLASS != null && params.MAIN_CLASS != '')
                 }
             }
             stages{
@@ -206,13 +203,6 @@ pipeline {
                     steps {
                         echo '- - - - - - - BUILD IMAGE - - - - - - -'
                         script {
-
-                            if(DEBUG == 'Y') {
-                                echo '- - - - - - - Printing Environment - - - - - - -'
-                                sh 'printenv'
-                                echo '- - - - - - - Done Printing Environment - - - - - - -'
-                            }
-
                             // a dir target should exist if we have packaged our app e.g via mvn package or mvn jar:jar'
                             sh "cp -r ${MAVEN_WORKSPACE}/target target"
                             sh "cd target && mkdir dependency && cd dependency && find ${WORKSPACE}/target -type f -name '*.jar' -exec jar -xf {} ';'"
@@ -242,6 +232,9 @@ pipeline {
                             }else{
                                 CMD_LINE = params.CMD_LINE_ARGS
                             }
+
+                            echo "RUN_ARGS = ${RUN_ARGS}"
+                            echo "CMD_LINE = ${CMD_LINE}"
 
                             docker.image("${IMAGE_NAME}")
                                 .withRun("${RUN_ARGS}", "${CMD_LINE}") {
