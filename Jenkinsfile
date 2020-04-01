@@ -3,7 +3,7 @@
  * https://github.com/poshjosh/bcutil
  */
 library(
-    identifier: 'jenkins-shared-library',
+    identifier: 'jenkins-shared-library@master',
     retriever: modernSCM(
         [
             $class: 'GitSCMSource',
@@ -12,4 +12,4 @@ library(
     )
 )
 
-defaultPipeline()
+defaultPipeline(gitUrl : 'https://github.com/poshjosh/bcutil.git')
