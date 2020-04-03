@@ -12,4 +12,4 @@ library(
     )
 )
 
-completePipeline(gitUrl : 'https://github.com/poshjosh/bcutil.git')
+completePipeline()
