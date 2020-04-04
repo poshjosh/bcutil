@@ -12,4 +12,4 @@ library(
     )
 )
 
-completePipeline()
+pipelineForJavaSpringBoot()
